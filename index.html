@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Коллекция алгоритмов и структур данных с визуализацией">
+    <title>📚 Коллекция алгоритмов | Сортировка, поиск, графы</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Дополнительные стили прямо в HTML на случай, если CSS не подключится */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .algorithms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 .complexity {
+            font-size: 0.7em;
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 20px;
+            color: #666;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        pre {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #333;
+        }
+        
+        .control-buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .control-buttons button {
+            background: white;
+            color: #667eea;
+            padding: 12px 25px;
+            font-size: 16px;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .algorithms-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Коллекция алгоритмов и структур данных</h1>
+            <p class="subtitle">Интерактивная визуализация алгоритмов с примерами кода</p>
+            <div class="stats-bar">
+                <div class="stat">📊 10+ алгоритмов</div>
+                <div class="stat">⚡ Сложность O(n), O(log n), O(n²)</div>
+                <div class="stat">🎯 Реальные примеры</div>
+            </div>
+        </header>
+
+        <div class="control-buttons">
+            <button onclick="runAllExamples()">▶️ Запустить все примеры</button>
+            <button onclick="clearAllOutputs()">🧹 Очистить все выводы</button>
+        </div>
+
+        <div class="algorithms-grid">
+            <!-- 1. Сортировка пузырьком -->
+            <div class="card">
+                <h2>
+                    🔢 Сортировка пузырьком
+                    <span class="complexity">O(n²)</span>
+                </h2>
+                <p>Простой алгоритм сортировки, который многократно проходит по массиву и меняет соседние элементы.</p>
+                <div class="button-group">
+                    <button onclick="runBubbleSort()">🚀 Запустить с примером</button>
+                    <button onclick="runBubbleSortWithCustomInput()">✏️ Запустить со своим массивом</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="bubble-custom-input" placeholder="Введите массив (например: 64,34,25,12,22,11,90)">
+                </div>
+                <pre id="bubble-output">🔄 Нажмите на кнопку, чтобы запустить алгоритм...</pre>
+            </div>
+
+            <!-- 2. Быстрая сортировка -->
+            <div class="card">
+                <h2>
+                    ⚡ Быстрая сортировка
+                    <span class="complexity">O(n log n)</span>
+                </h2>
+                <p>Эффективный алгоритм сортировки, использующий разделяй и властвуй.</p>
+                <div class="button-group">
+                    <button onclick="runQuickSort()">🚀 Запустить с примером</button>
+                </div>
+                <pre id="quick-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 3. Бинарный поиск -->
+            <div class="card">
+                <h2>
+                    🔍 Бинарный поиск
+                    <span class="complexity">O(log n)</span>
+                </h2>
+                <p>Поиск элемента в отсортированном массиве путем деления пополам.</p>
+                <div class="input-group">
+                    <input type="text" id="search-array" placeholder="Массив (например: [1,3,5,7,9,11])" value="[1,3,5,7,9,11,13,15]">
+                    <input type="number" id="search-target" placeholder="Число для поиска" value="7">
+                </div>
+                <div class="button-group">
+                    <button onclick="runBinarySearch()">🔎 Найти</button>
+                    <button onclick="fillExample()">🎲 Случайный пример</button>
+                </div>
+                <pre id="binary-output">🔄 Введите массив и число для поиска...</pre>
+            </div>
+
+            <!-- 4. Линейный поиск -->
+            <div class="card">
+                <h2>
+                    🔎 Линейный поиск
+                    <span class="complexity">O(n)</span>
+                </h2>
+                <p>Последовательный поиск элемента в массиве.</p>
+                <div class="input-group">
+                    <input type="text" id="linear-array" placeholder="Массив (например: 5,2,8,1,9,3)" value="5,2,8,1,9,3">
+                    <input type="number" id="linear-target" placeholder="Число для поиска" value="8">
+                </div>
+                <button onclick="runLinearSearch()">🔎 Найти</button>
+                <pre id="linear-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 5. DFS - Обход графа в глубину -->
+            <div class="card">
+                <h2>
+                    🌳 DFS (Обход в глубину)
+                    <span class="complexity">O(V + E)</span>
+                </h2>
+                <p>Алгоритм обхода графа, идущий вглубь по одному пути до конца.</p>
+                <button onclick="runDFS()">🚀 Запустить DFS</button>
+                <pre id="dfs-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 6. BFS - Обход графа в ширину -->
+            <div class="card">
+                <h2>
+                    🌊 BFS (Обход в ширину)
+                    <span class="complexity">O(V + E)</span>
+                </h2>
+                <p>Алгоритм обхода графа, исследующий соседние вершины по уровням.</p>
+                <button onclick="runBFS()">🚀 Запустить BFS</button>
+                <pre id="bfs-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 7. Числа Фибоначчи -->
+            <div class="card">
+                <h2>
+                    📈 Числа Фибоначчи
+                    <span class="complexity">O(n)</span>
+                </h2>
+                <p>Вычисление чисел Фибоначчи с мемоизацией.</p>
+                <div class="input-group">
+                    <input type="number" id="fib-number" placeholder="n" value="10" min="0" max="100">
+                </div>
+                <button onclick="runFibonacci()">🧮 Вычислить</button>
+                <pre id="fib-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 8. Поиск наибольшего элемента -->
+            <div class="card">
+                <h2>
+                    🎯 Поиск максимума
+                    <span class="complexity">O(n)</span>
+                </h2>
+                <p>Находит максимальный элемент в массиве.</p>
+                <div class="input-group">
+                    <input type="text" id="max-array" placeholder="Массив (например: 12,45,7,89,23)" value="12,45,7,89,23">
+                </div>
+                <button onclick="runFindMax()">🔝 Найти максимум</button>
+                <pre id="max-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 9. Проверка на палиндром -->
+            <div class="card">
+                <h2>
+                    💫 Проверка на палиндром
+                    <span class="complexity">O(n)</span>
+                </h2>
+                <p>Проверяет, читается ли строка одинаково слева направо и справа налево.</p>
+                <div class="input-group">
+                    <input type="text" id="palindrome-input" placeholder="Введите слово или фразу" value="А роза упала на лапу Азора">
+                </div>
+                <button onclick="runPalindromeCheck()">🔄 Проверить</button>
+                <pre id="palindrome-output">🔄 Ожидание выполнения...</pre>
+            </div>
+
+            <!-- 10. Факториал -->
+            <div class="card">
+                <h2>
+                    ➗ Факториал
+                    <span class="complexity">O(n)</span>
+                </h2>
+                <p>Вычисление факториала числа рекурсивно.</p>
+                <div class="input-group">
+                    <input type="number" id="factorial-number" placeholder="n" value="5" min="0" max="20">
+                </div>
+                <button onclick="runFactorial()">🔢 Вычислить</button>
+                <pre id="factorial-output">🔄 Ожидание выполнения...</pre>
+            </div>
+        </div>
+
+        <footer>
+            <p>📚 Все алгоритмы с визуализацией | ⏱️ Сложность указана для каждого алгоритма | 🎓 Учебный проект</p>
+        </footer>
+    </div>
+
+    <script src="algorithms/sorting.js"></script>
+    <script src="algorithms/search.js"></script>
+    <script src="algorithms/graph.js"></script>
+    <script src="algorithms/math.js"></script>
+    <script src="algorithms/strings.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
