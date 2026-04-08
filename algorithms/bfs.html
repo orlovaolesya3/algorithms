@@ -6,6 +6,10 @@
     <title>BFS - поиск в ширину</title>
     <link rel="stylesheet" href="../style.css">
     <style>
+        li {
+        list-style-type: none;
+        padding-left: 20px;
+        }
         /* Дополнительные стили для BFS страницы */
         .input-example {
             background: rgba(171, 205, 239, 0.15);
@@ -203,6 +207,19 @@ int main() {
 
         <!-- Интерактивный запуск -->
         <div class="demo">
+        <button onclick="openVisualizer()">Визуализировать на графе</button>
+
+        <script>
+           function openVisualizer() {
+            // Сохраняем текущий граф в localStorage
+            const graphData = {
+            nodes: [1,2,3,4],
+            edges: [[1,2],[2,3],[3,4],[1,4]]
+            };
+            localStorage.setItem('visualizerGraph', JSON.stringify(graphData));
+            window.open('../pages/visualizer.html', '_blank');
+            }
+</script>
             <h3>Попробовать BFS онлайн</h3>
             <p>Введите граф в формате, описанном выше:</p>
             
@@ -297,9 +314,9 @@ int main() {
                 const stepsContainer = document.getElementById('steps-container');
                 
                 if (result === -1) {
-                    outputDiv.innerHTML = `❌ Вершина ${t + 1} недостижима из вершины ${s + 1}`;
+                    outputDiv.innerHTML = ` Вершина ${t + 1} недостижима из вершины ${s + 1}`;
                 } else {
-                    outputDiv.innerHTML = `✅ Кратчайшее расстояние от вершины ${s + 1} до вершины ${t + 1} = ${result}`;
+                    outputDiv.innerHTML = ` Кратчайшее расстояние от вершины ${s + 1} до вершины ${t + 1} = ${result}`;
                     
                     // Показываем пошаговое объяснение
                     stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
@@ -307,7 +324,7 @@ int main() {
                 }
                 
             } catch(e) {
-                document.getElementById('bfs-output').innerHTML = '❌ Ошибка при разборе ввода: ' + e.message;
+                document.getElementById('bfs-output').innerHTML = ' Ошибка при разборе ввода: ' + e.message;
             }
         }
         
