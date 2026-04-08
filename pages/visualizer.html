@@ -409,19 +409,21 @@
         let physicsAnimationId = null;
         const NODE_RADIUS = 32;
         
+        // Хранит текущий отображаемый путь
+        let currentPathEdges = [];
+        
         // Параметры физики — ослабленные, чтобы граф не сжимался обратно
-        const REPULSION_STRENGTH = 500;  // сильное отталкивание
-        const SPRING_STRENGTH = 0.012;    // очень слабые пружины
-        const SPRING_LENGTH = 200;        // длинные пружины
-        const CENTER_STRENGTH = 0.002;    // слабое притяжение к центру
-        const DAMPING = 0.95;             // затухание
-        const MAX_SPEED = 3;              // максимальная скорость
+        const REPULSION_STRENGTH = 500;
+        const SPRING_STRENGTH = 0.012;
+        const SPRING_LENGTH = 200;
+        const CENTER_STRENGTH = 0.002;
+        const DAMPING = 0.95;
+        const MAX_SPEED = 3;
         
         const CANVAS_SIZE = 670;
         const CENTER_X = CANVAS_SIZE / 2;
         const CENTER_Y = CANVAS_SIZE / 2;
         
-        // Функция сравнения для любых типов вершин
         function compareNodes(a, b) {
             const aIsNum = !isNaN(a) && typeof a !== 'string';
             const bIsNum = !isNaN(b) && typeof b !== 'string';
@@ -493,14 +495,13 @@
         
         function applyForces() {
             if (isRunning) return;
-            if (draggingNode !== null) return;  // Не применяем силы пока тащим вершину
+            if (draggingNode !== null) return;
             
             const forces = {};
             for (let node of graph.nodes) {
                 forces[node] = { x: 0, y: 0 };
             }
             
-            // 1. Отталкивание между всеми парами вершин
             for (let i = 0; i < graph.nodes.length; i++) {
                 for (let j = i + 1; j < graph.nodes.length; j++) {
                     const nodeA = graph.nodes[i];
@@ -528,7 +529,6 @@
                 }
             }
             
-            // 2. Притяжение по рёбрам (очень слабое, только если далеко)
             for (let edge of graph.edges) {
                 const from = edge.from;
                 const to = edge.to;
@@ -555,7 +555,6 @@
                 }
             }
             
-            // 3. Слабое притяжение к центру
             for (let node of graph.nodes) {
                 const pos = nodePositions[node];
                 if (!pos) continue;
@@ -573,7 +572,6 @@
                 }
             }
             
-            // Применяем силы
             for (let node of graph.nodes) {
                 if (!nodeVelocities[node]) {
                     nodeVelocities[node] = { x: 0, y: 0 };
@@ -703,7 +701,6 @@
                     let b = parts[1];
                     let weight = 1;
                     
-                    // Пробуем преобразовать в число, если получается — используем число
                     let aNum = parseFloat(a);
                     let bNum = parseFloat(b);
                     let nodeA = !isNaN(aNum) && aNum.toString() === a ? aNum : a;
@@ -735,6 +732,7 @@
                 }
             }
             
+            currentPathEdges = [];
             calculateNodePositions();
             drawGraph();
             updateDefaultStartEnd();
@@ -775,6 +773,7 @@
             graph = { nodes: [], edges: [] };
             nodePositions = {};
             nodeVelocities = {};
+            currentPathEdges = [];
             drawGraph();
             document.getElementById('algoStatus').innerHTML = ' Граф очищен';
             document.getElementById('startNode').value = '';
@@ -785,22 +784,19 @@
             let text = '';
             document.getElementById('weightedCheckbox').checked = false;
             document.getElementById('directedCheckbox').checked = false;
+            currentPathEdges = [];
             
             switch(type) {
                 case 'tree':
-                    // Дерево с корнем 1
                     text = `1 2\n1 3\n1 4\n2 5\n2 6\n3 7\n4 8`;
                     break;
                 case 'bamboo':
-                    // Бамбук (линия/путь) из 6 вершин
                     text = `1 2\n2 3\n3 4\n4 5\n5 6`;
                     break;
                 case 'cycle':
-                    // Цикл из 6 вершин
                     text = `1 2\n2 3\n3 4\n4 5\n5 6\n6 1`;
                     break;
                 case 'weighted':
-                    // Взвешенный граф
                     text = `1 2 5\n1 3 3\n2 4 2\n3 4 7\n2 5 4\n4 5 1`;
                     document.getElementById('weightedCheckbox').checked = true;
                     break;
@@ -873,8 +869,11 @@
             canvas.style.cursor = 'grab';
         }
         
-        function drawGraph(highlightedNodes = [], currentNode = null, pathEdges = []) {
+        function drawGraph(highlightedNodes = [], currentNode = null, pathEdges = null) {
             if (!ctx) return;
+            
+            const activePathEdges = pathEdges !== null ? pathEdges : currentPathEdges;
+            
             ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
             
             if (graph.nodes.length === 0) return;
@@ -883,6 +882,14 @@
             const isDirected = document.getElementById('directedCheckbox').checked;
             const isDarkTheme = document.body.classList.contains('dark-theme');
             const weightColor = isDarkTheme ? '#ffffff' : '#444444';
+            
+            const pathEdgesSet = new Set();
+            for (let edge of activePathEdges) {
+                pathEdgesSet.add(`${edge.from}|${edge.to}`);
+                if (!isDirected) {
+                    pathEdgesSet.add(`${edge.to}|${edge.from}`);
+                }
+            }
             
             for (let edge of graph.edges) {
                 const from = nodePositions[edge.from];
@@ -898,13 +905,11 @@
                     ctx.moveTo(from.x, from.y);
                     ctx.lineTo(to.x, to.y);
                     
-                    const isInPath = pathEdges.some(pe => 
-                        (pe.from === edge.from && pe.to === edge.to)
-                    );
+                    const isInPath = pathEdgesSet.has(`${edge.from}|${edge.to}`);
                     
                     if (isInPath) {
                         ctx.strokeStyle = '#d4a5a5';
-                        ctx.lineWidth = 4;
+                        ctx.lineWidth = 5;
                     } else {
                         ctx.strokeStyle = isDarkTheme ? '#6b6b7a' : '#cccccc';
                         ctx.lineWidth = 2.5;
@@ -934,6 +939,12 @@
                 }
             }
             
+            const pathNodesSet = new Set();
+            for (let edge of activePathEdges) {
+                pathNodesSet.add(edge.from);
+                pathNodesSet.add(edge.to);
+            }
+            
             for (let node of graph.nodes) {
                 const pos = nodePositions[node];
                 if (!pos) continue;
@@ -943,7 +954,7 @@
                 
                 if (currentNode === node) {
                     ctx.fillStyle = '#e0b0a0';
-                } else if (pathEdges.some(edge => edge.from === node || edge.to === node)) {
+                } else if (pathNodesSet.has(node)) {
                     ctx.fillStyle = '#d4a5a5';
                 } else if (highlightedNodes.includes(node)) {
                     ctx.fillStyle = '#a8d5a2';
@@ -974,17 +985,16 @@
             if (start === '') {
                 start = getMinNode();
             }
-            // Сравниваем как строки или числа
             const startStr = String(start);
             const foundStart = graph.nodes.some(node => String(node) === startStr || node === start);
             if (!foundStart) {
                 alert(`Стартовая вершина "${start}" не найдена в графе. Доступные вершины: ${graph.nodes.map(n => displayVertexLabel(n)).join(', ')}`);
                 return;
             }
-            // Находим реальный узел
             const realStart = graph.nodes.find(node => String(node) === startStr || node === start);
             
             isRunning = true;
+            currentPathEdges = [];
             document.getElementById('algoStatus').innerHTML = ` BFS от вершины ${displayVertexLabel(realStart)}...`;
             
             const visited = [];
@@ -1028,6 +1038,7 @@
             const realStart = graph.nodes.find(node => String(node) === startStr || node === start);
             
             isRunning = true;
+            currentPathEdges = [];
             document.getElementById('algoStatus').innerHTML = ` DFS от вершины ${displayVertexLabel(realStart)}...`;
             
             const visited = [];
@@ -1135,9 +1146,11 @@
                 for (let i = 0; i < path.length - 1; i++) {
                     pathEdges.push({ from: path[i], to: path[i+1] });
                 }
-                drawGraph([], null, pathEdges);
+                currentPathEdges = pathEdges;
+                drawGraph([], null, currentPathEdges);
             } else {
                 document.getElementById('algoStatus').innerHTML = ` Путь от ${displayVertexLabel(realStart)} до ${displayVertexLabel(realEnd)} не найден`;
+                currentPathEdges = [];
                 drawGraph();
             }
         }
