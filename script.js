@@ -33,7 +33,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// ========== КОПИРОВАНИЕ КОДА ==========
+function setupCopyButtons() {
+    const codeBlocks = document.querySelectorAll('.code-block');
+    
+    codeBlocks.forEach((block) => {
+        if (block.querySelector('.copy-btn')) return;
+        
+        const pre = block.querySelector('pre');
+        if (!pre) return;
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.innerHTML = 'Копировать';
+        
+        copyBtn.addEventListener('click', async () => {
+            const code = pre.innerText;
+            
+            try {
+                await navigator.clipboard.writeText(code);
+                copyBtn.innerHTML = 'Скопировано!';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = 'Копировать';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Ошибка копирования:', err);
+                copyBtn.innerHTML = 'Ошибка';
+                setTimeout(() => {
+                    copyBtn.innerHTML = 'Копировать';
+                }, 2000);
+            }
+        });
+        
+        block.style.position = 'relative';
+        block.appendChild(copyBtn);
+    });
+}
 
+// Запускаем после загрузки страницы
+document.addEventListener('DOMContentLoaded', () => {
+    setupCopyButtons();
+});
+
+// Также запускаем при динамическом изменении содержимого (для визуализатора)
+if (window.MutationObserver) {
+    const observer = new MutationObserver(() => {
+        setupCopyButtons();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+}
 // Функция для вставки лапки вместо смайликов
 function addPawIcons() {
     // Заменяем смайлики в заголовках карточек

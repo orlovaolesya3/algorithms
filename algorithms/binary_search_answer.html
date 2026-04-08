@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Бинарный поиск по ответу</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/search.html" class="back-btn">← Назад к алгоритмам поиска</a>
+        
+        <header>
+            <h1>Бинарный поиск по ответу</h1>
+            <p>Как найти границу, когда все "хорошие" ответы слева, а "плохие" справа</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>l, r = 0, n
+while l < r - 1:
+    m = (l + r) // 2
+    if ok(m):
+        l = m
+    else:
+        r = m
+# Ответ: l</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>int l = 0, r = n, m;
+while (l < r - 1) {
+    m = (l + r) / 2;
+    if (ok(m))
+        l = m;
+    else
+        r = m;
+}
+// Ответ: l</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Что такое бинарный поиск по ответу?</h3>
+            <p>Это способ найти максимальное (или минимальное) значение, которое удовлетворяет какому-то условию, когда все меньшие значения тоже подходят, а все большие — нет. Или наоборот.</p>
+            
+            <p><strong>Главная идея:</strong> если мы умеем быстро проверять, подходит ли нам какое-то число, то можно не перебирать все варианты по очереди, а отсекать половину диапазона на каждом шаге.</p>
+            
+            <h4>Как это работает</h4>
+            <p>Представьте, что у нас есть отрезок чисел от 0 до n. Про каждое число мы можем сказать "хорошее" или "плохое". Причём все хорошие числа идут подряд слева, а плохие — справа. Наша задача — найти последнее хорошее число.</p>
+            
+            <ul>
+                <li><strong>l</strong> — левая граница (хорошее число)</li>
+                <li><strong>r</strong> — правая граница (плохое число)</li>
+                <li><strong>m</strong> — середина между l и r</li>
+            </ul>
+            
+            <p>На каждом шаге мы смотрим на середину m:</p>
+            <ul>
+                <li>Если m — хорошее, то все числа левее m тоже хорошие. Сдвигаем левую границу: <code>l = m</code></li>
+                <li>Если m — плохое, то все числа правее m тоже плохие. Сдвигаем правую границу: <code>r = m</code></li>
+            </ul>
+            
+            <p>Так мы сужаем отрезок, пока между l и r не останется ни одного целого числа. Когда <code>l</code> и <code>r</code> станут соседями (<code>r = l + 1</code>), ответом будет <code>l</code> — последнее хорошее число.</p>
+            
+            <p><strong>Скорость работы:</strong> за один шаг мы отбрасываем половину оставшихся вариантов. Поэтому нужно всего <strong>O(log n)</strong> шагов, где n — длина отрезка.</p>
+        </div>
+
+        <!-- Пример -->
+        <div class="explanation">
+            <h3>Наглядный пример</h3>
+            <p>Пусть у нас есть числа от 0 до 10. Условие: число считается "хорошим", если оно меньше 7. То есть хорошие числа: 0,1,2,3,4,5,6. Плохие: 7,8,9,10.</p>
+            <p>Нужно найти самое большое хорошее число — это 6.</p>
+            
+            <div class="input-example">
+                <h4>Как будет работать алгоритм:</h4>
+                <pre><code>Шаг 1: l=0, r=10 → середина m=5 → 5 хорошее → l=5
+Шаг 2: l=5, r=10 → середина m=7 → 7 плохое → r=7
+Шаг 3: l=5, r=7 → середина m=6 → 6 хорошее → l=6
+Шаг 4: l=6, r=7 → между ними нет целых чисел → останов</code></pre>
+                <p><strong>Ответ: 6</strong></p>
+            </div>
+            
+            <p><strong>Где применяется:</strong></p>
+            <ul>
+                <li>Поиск корня уравнения</li>
+                <li>Поиск максимального размера, который влезает в ограничения</li>
+                <li>Поиск минимального времени, за которое можно выполнить работу</li>
+                <li>Задачи, где нужно найти границу по монотонному признаку</li>
+            </ul>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать самому</h3>
+            <p>Задайте диапазон и условие, чтобы найти границу:</p>
+            
+            <label>Диапазон: от 0 до</label>
+            <input type="number" id="n-value" value="10" min="1" max="100">
+            
+            <label>Условие: число хорошее, если оно меньше</label>
+            <input type="number" id="threshold" value="7" min="0" max="100">
+            
+            <div class="try-it">
+                <button onclick="runBinarySearchDemo()">🔍 Найти границу</button>
+                <button onclick="loadExample1()">Пример: хорошие числа &lt; 7</button>
+                <button onclick="loadExample2()">Пример: хорошие числа ≤ 5</button>
+            </div>
+            
+            <div class="output" id="demo-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function runBinarySearchDemo() {
+            const n = parseInt(document.getElementById('n-value').value);
+            const threshold = parseInt(document.getElementById('threshold').value);
+            
+            if (isNaN(n) || n < 1) {
+                document.getElementById('demo-output').innerHTML = '❌ Введите корректное n (≥ 1)';
+                return;
+            }
+            if (isNaN(threshold) || threshold < 0 || threshold > n) {
+                document.getElementById('demo-output').innerHTML = `❌ Введите порог от 0 до ${n}`;
+                return;
+            }
+            
+            // Функция ok(x) — true для x < threshold
+            const isGood = (x) => x < threshold;
+            
+            // Проверка условия
+            if (isGood(0) !== true) {
+                document.getElementById('demo-output').innerHTML = `❌ Ошибка: число 0 должно быть хорошим (при x=0, ${isGood(0)})`;
+                return;
+            }
+            if (isGood(n) !== false) {
+                document.getElementById('demo-output').innerHTML = `❌ Ошибка: число ${n} должно быть плохим (при x=${n}, ${isGood(n)})`;
+                return;
+            }
+            
+            let l = 0, r = n;
+            const steps = [];
+            steps.push(`Начало: l = ${l} (хорошее), r = ${r} (плохое)`);
+            steps.push(`Условие: число хорошее, если оно < ${threshold}`);
+            
+            while (l < r - 1) {
+                const m = Math.floor((l + r) / 2);
+                const good = isGood(m);
+                steps.push(`Шаг: смотрим середину m = ${m}`);
+                
+                if (good) {
+                    l = m;
+                    steps.push(`  ${m} — хорошее → сдвигаем левую границу: l = ${l}`);
+                } else {
+                    r = m;
+                    steps.push(`  ${m} — плохое → сдвигаем правую границу: r = ${r}`);
+                }
+            }
+            
+            const answer = l;
+            steps.push(`Завершение: l = ${l}, r = ${r} → ответ = ${answer}`);
+            
+            const outputDiv = document.getElementById('demo-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            outputDiv.innerHTML = `✅ Самое большое хорошее число: <strong>${answer}</strong><br>📊 Проверка: ${answer} — хорошее (${isGood(answer)}), ${answer + 1} — плохое (${isGood(answer + 1)})`;
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('n-value').value = '10';
+            document.getElementById('threshold').value = '7';
+            runBinarySearchDemo();
+        }
+        
+        function loadExample2() {
+            document.getElementById('n-value').value = '20';
+            document.getElementById('threshold').value = '6';
+            runBinarySearchDemo();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>

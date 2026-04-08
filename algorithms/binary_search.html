@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Бинарный поиск - поиск в отсортированном массиве</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .builtin-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .builtin-container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/search.html" class="back-btn">← Назад к алгоритмам поиска</a>
+        
+        <header>
+            <h1>Бинарный поиск</h1>
+            <p>Поиск последнего элемента, меньшего x, в отсортированном массиве</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>n = int(input())
+A = list(map(int, input().split()))
+x = int(input())
+
+l, r = 0, n
+
+while l < r - 1:
+    m = (l + r) // 2
+    if A[m] < x:
+        l = m
+    else:
+        r = m
+
+print(l)</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int main() {
+    int n, x;
+    cin >> n;
+    
+    vector&lt;int&gt; A(n);
+    for (int i = 0; i &lt; n; i++)
+        cin >> A[i];
+    
+    cin >> x;
+    
+    int l = 0, r = n, m;
+    
+    while (l < r - 1) {
+        m = (l + r) / 2;
+        if (A[m] < x)
+            l = m;
+        else
+            r = m;
+    }
+    
+    cout << l << endl;
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Встроенные функции -->
+        <div class="builtin-container">
+            <div class="code-block">
+                <div class="code-header">📚 Python (встроенная функция)</div>
+                <pre><code>import bisect
+index = bisect.bisect_left(A, x)</code></pre>
+            </div>
+            <div class="code-block">
+                <div class="code-header">📚 C++ (встроенная функция)</div>
+                <pre><code>#include &lt;algorithm&gt;
+int index = lower_bound(arr.begin(), arr.end(), x) - arr.begin();</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает бинарный поиск?</h3>
+            <p>Этот алгоритм реализует <strong>правый бинарный поиск</strong> (или бинарный поиск по правой границе). Его цель — найти индекс последнего элемента в отсортированном массиве, который строго меньше заданного значения x.</p>
+            
+            <h4>Основная идея</h4>
+            <p>Алгоритм поддерживает два указателя — <strong>l</strong> (левый) и <strong>r</strong> (правый). В любой момент времени выполняется важный инвариант:</p>
+            <ul>
+                <li>Все элементы с индексами ≤ l <strong>меньше x</strong></li>
+                <li>Все элементы с индексами ≥ r <strong>больше или равны x</strong></li>
+            </ul>
+            <p>Изначально <code>l = 0</code>, <code>r = n</code>. Это значит, что мы ничего не знаем об элементах (инвариант выполняется тривиально, так как отрезки пусты).</p>
+            
+            <h4>Шаги работы</h4>
+            <ul>
+                <li><strong>Проверка условия продолжения:</strong> <code>while l < r - 1</code> — цикл продолжается, пока между l и r есть хотя бы один элемент. Если <code>r = l + 1</code>, значит между указателями нет элементов, и поиск завершён.</li>
+                <li><strong>Вычисление середины:</strong> <code>m = (l + r) // 2</code> — берётся индекс элемента примерно посередине между l и r.</li>
+                <li><strong>Проверка элемента A[m]:</strong>
+                    <ul>
+                        <li>Если <code>A[m] < x</code> — этот элемент подходит (меньше x). Сдвигаем левую границу: <code>l = m</code>. Теперь все элементы до m включительно гарантированно меньше x.</li>
+                        <li>Если <code>A[m] >= x</code> — элемент не подходит (он больше или равен x). Сдвигаем правую границу: <code>r = m</code>. Теперь все элементы с m и правее гарантированно не меньше x.</li>
+                    </ul>
+                </li>
+                <li><strong>Повторение</strong> — процесс продолжается, пока интервал не сузится до двух соседних индексов.</li>
+            </ul>
+            
+            <h4>Завершение алгоритма</h4>
+            <p>Когда цикл заканчивается, <strong>l</strong> и <strong>r</strong> становятся соседними индексами <code>(r = l + 1)</code>. При этом:</p>
+            <ul>
+                <li><strong>l</strong> — это индекс последнего элемента, который гарантированно меньше x</li>
+                <li><strong>r</strong> — это индекс первого элемента, который гарантированно больше или равен x</li>
+            </ul>
+            
+            <p><strong>Временная сложность: O(log n)</strong>, где n — размер массива.</p>
+        </div>
+
+        <!-- Пример -->
+        <div class="explanation">
+            <h3>Пример работы</h3>
+            <p>Для массива <code>A = [1, 3, 5, 7, 9, 11, 13]</code> и <code>x = 10</code>:</p>
+            
+            <div class="input-example">
+                <pre><code>Начало: l=0, r=7
+m=3 → A[3]=7 < 10 → l=3
+m=5 → A[5]=11 >= 10 → r=5
+m=4 → A[4]=9 < 10 → l=4
+Цикл завершён (l=4, r=5)</code></pre>
+                <p><strong>Результат: l = 4</strong> (элемент 9 — последний меньший 10)</p>
+            </div>
+            
+            <h4>Важные замечания</h4>
+            <ul>
+                <li>Массив должен быть <strong>отсортирован по неубыванию</strong></li>
+                <li>Если все элементы меньше x, то l будет равен <strong>n-1</strong></li>
+                <li>Если все элементы больше или равны x, то l останется <strong>0</strong> (но проверять A[0] < x нужно отдельно)</li>
+                <li>Алгоритм работает за <strong>O(log n)</strong> операций</li>
+                <li>Этот алгоритм часто используется как составная часть более сложных операций: поиск места вставки, нахождение количества элементов меньше x, реализация upper_bound и т.д.</li>
+            </ul>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать бинарный поиск онлайн</h3>
+            <p>Введите отсортированный массив и число x:</p>
+            
+            <label>Массив (числа через пробел):</label>
+            <input type="text" id="array-input" value="1 3 5 7 9 11 13">
+            
+            <label>Число x:</label>
+            <input type="number" id="x-value" value="10">
+            
+            <div class="try-it">
+                <button onclick="runBinarySearchDemo()">🔍 Найти индекс</button>
+                <button onclick="loadExample1()">Пример 1: массив [1,3,5,7,9,11,13], x=10</button>
+                <button onclick="loadExample2()">Пример 2: все элементы меньше x</button>
+                <button onclick="loadExample3()">Пример 3: все элементы больше x</button>
+            </div>
+            
+            <div class="output" id="demo-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function runBinarySearchDemo() {
+            const arrayStr = document.getElementById('array-input').value;
+            const x = parseInt(document.getElementById('x-value').value);
+            
+            // Парсим массив
+            const A = arrayStr.trim().split(/\s+/).map(Number);
+            const n = A.length;
+            
+            if (n === 0) {
+                document.getElementById('demo-output').innerHTML = '❌ Введите массив чисел';
+                return;
+            }
+            
+            if (isNaN(x)) {
+                document.getElementById('demo-output').innerHTML = '❌ Введите число x';
+                return;
+            }
+            
+            // Проверка на отсортированность
+            let isSorted = true;
+            for (let i = 1; i < n; i++) {
+                if (A[i] < A[i-1]) {
+                    isSorted = false;
+                    break;
+                }
+            }
+            
+            if (!isSorted) {
+                document.getElementById('demo-output').innerHTML = '⚠️ Массив не отсортирован! Пожалуйста, введите отсортированный массив.';
+                return;
+            }
+            
+            let l = 0, r = n;
+            const steps = [];
+            steps.push(`Массив: [${A.join(', ')}]`);
+            steps.push(`Ищем последний элемент, который строго меньше ${x}`);
+            steps.push(`Начало: l = ${l}, r = ${r}`);
+            steps.push(`Инвариант: A[≤l] < x, A[≥r] ≥ x`);
+            
+            while (l < r - 1) {
+                const m = Math.floor((l + r) / 2);
+                steps.push(`\nШаг: l=${l}, r=${r} → m = (${l} + ${r}) // 2 = ${m}`);
+                steps.push(`  A[${m}] = ${A[m]}`);
+                
+                if (A[m] < x) {
+                    l = m;
+                    steps.push(`  ${A[m]} < ${x} → сдвигаем левую границу: l = ${l}`);
+                } else {
+                    r = m;
+                    steps.push(`  ${A[m]} >= ${x} → сдвигаем правую границу: r = ${r}`);
+                }
+            }
+            
+            const answer = l;
+            steps.push(`\nЗавершение: l = ${l}, r = ${r}`);
+            
+            const outputDiv = document.getElementById('demo-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (answer < 0 || answer >= n) {
+                outputDiv.innerHTML = `✅ Индекс последнего элемента, меньшего ${x}: <strong>${answer}</strong><br>📊 Все элементы ${answer === -1 ? 'больше или равны' : 'меньше'} x`;
+            } else {
+                outputDiv.innerHTML = `✅ Индекс последнего элемента, меньшего ${x}: <strong>${answer}</strong><br>📊 A[${answer}] = ${A[answer]} ${A[answer] < x ? '<' : '>='} ${x}`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('array-input').value = '1 3 5 7 9 11 13';
+            document.getElementById('x-value').value = '10';
+            runBinarySearchDemo();
+        }
+        
+        function loadExample2() {
+            document.getElementById('array-input').value = '1 2 3 4 5 6 7';
+            document.getElementById('x-value').value = '10';
+            runBinarySearchDemo();
+        }
+        
+        function loadExample3() {
+            document.getElementById('array-input').value = '10 20 30 40 50';
+            document.getElementById('x-value').value = '5';
+            runBinarySearchDemo();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>

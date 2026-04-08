@@ -17,7 +17,7 @@
             margin: 20px 0;
             align-items: start;
         }
-        
+    
         .graph-canvas {
             background: white;
             border-radius: 20px;
@@ -198,79 +198,95 @@
             color: #e0e0e0;
         }
         
-        @media (max-width: 1050px) {
+        /* ========== АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ ========== */
+        @media (max-width: 768px) {
             .visualizer-container {
-                grid-template-columns: 1fr;
-                justify-items: center;
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+            
+            .graph-canvas {
+                width: calc(100vw - 40px) !important;
+                height: calc(100vw - 40px) !important;
+                max-width: 500px;
+                max-height: 500px;
+                margin: 0 auto;
+                padding: 10px !important;
+            }
+            
+            canvas {
+                width: calc(100% - 20px) !important;
+                height: calc(100% - 20px) !important;
+                position: absolute !important;
+                top: 10px !important;
+                left: 10px !important;
             }
             
             .controls {
-                min-width: auto;
-                width: 100%;
+                min-width: auto !important;
+                width: 100% !important;
+            }
+            
+            .checkbox-group {
+                gap: 12px !important;
+            }
+            
+            .checkbox-group label {
+                font-size: 13px !important;
+            }
+            
+            .button-group button {
+                padding: 8px 14px !important;
+                font-size: 12px !important;
+            }
+            
+            .start-end-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .start-end-group label {
+                justify-content: space-between;
+            }
+            
+            .start-end-group input {
+                width: 120px !important;
+            }
+            
+            .legend-colors {
+                gap: 12px;
+            }
+            
+            .legend-item {
+                font-size: 11px;
+            }
+            
+            textarea {
+                font-size: 13px !important;
             }
         }
-/* Адаптивность для телефонов */
-@media (max-width: 768px) {
-    .visualizer-container {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-    }
-    
-    .graph-canvas {
-        width: 100% !important;
-        height: auto !important;
-        aspect-ratio: 1 / 1 !important;
-        padding: 10px !important;
-    }
-    
-    canvas {
-        width: calc(100% - 20px) !important;
-        height: calc(100% - 20px) !important;
-        position: absolute !important;
-        top: 10px !important;
-        left: 10px !important;
-    }
-    
-    .controls {
-        min-width: auto !important;
-        width: 100% !important;
-    }
-    
-    .checkbox-group {
-        gap: 12px !important;
-    }
-    
-    .checkbox-group label {
-        font-size: 13px !important;
-    }
-    
-    .button-group button {
-        padding: 8px 14px !important;
-        font-size: 12px !important;
-    }
-    
-    .start-end-group {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-    
-    .start-end-group label {
-        justify-content: space-between;
-    }
-    
-    .start-end-group input {
-        width: 120px !important;
-    }
-    
-    .legend-colors {
-        gap: 12px;
-    }
-    
-    .legend-item {
-        font-size: 11px;
-    }
-}
+        
+        /* Для очень маленьких телефонов */
+        @media (max-width: 480px) {
+            .graph-canvas {
+                width: calc(100vw - 30px) !important;
+                height: calc(100vw - 30px) !important;
+            }
+            
+            .control-group {
+                padding: 12px !important;
+            }
+            
+            .control-group h3 {
+                font-size: 1em !important;
+            }
+            
+            .button-group button {
+                padding: 6px 12px !important;
+                font-size: 11px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -394,12 +410,12 @@
         const NODE_RADIUS = 32;
         
         // Параметры физики — ослабленные, чтобы граф не сжимался обратно
-        const REPULSION_STRENGTH = 1200;  // сильное отталкивание
+        const REPULSION_STRENGTH = 500;  // сильное отталкивание
         const SPRING_STRENGTH = 0.012;    // очень слабые пружины
-        const SPRING_LENGTH = 220;        // длинные пружины
+        const SPRING_LENGTH = 200;        // длинные пружины
         const CENTER_STRENGTH = 0.002;    // слабое притяжение к центру
         const DAMPING = 0.95;             // затухание
-        const MAX_SPEED = 5;              // максимальная скорость
+        const MAX_SPEED = 3;              // максимальная скорость
         
         const CANVAS_SIZE = 670;
         const CENTER_X = CANVAS_SIZE / 2;

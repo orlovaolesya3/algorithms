@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Интерполяционный поиск</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .warning {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        body.dark-theme .warning {
+            background: rgba(255, 193, 7, 0.1);
+        }
+        
+        .warning p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/search.html" class="back-btn">← Назад к алгоритмам поиска</a>
+        
+        <header>
+            <h1>Интерполяционный поиск</h1>
+            <p>Умный поиск в отсортированном массиве через угадывание позиции</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>D = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+t = 70
+
+l = 0
+r = len(D) - 1
+res = -1
+
+while l <= r and D[l] <= t <= D[r]:
+    if D[l] == D[r]:
+        if D[l] == t:
+            res = l
+            break
+        else:
+            break
+    
+    p = l + ((t - D[l]) * (r - l)) // (D[r] - D[l])
+    
+    if p < l or p > r:
+        break
+    
+    if D[p] == t:
+        res = p
+        break
+    elif D[p] < t:
+        l = p + 1
+    else:
+        r = p - 1
+
+print(res if res != -1 else -1)</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+int main() {
+    vector&lt;int&gt; D = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+    int t = 70;
+    
+    int l = 0;
+    int r = D.size() - 1;
+    int res = -1;
+    
+    while (l <= r && D[l] <= t && t <= D[r]) {
+        if (D[l] == D[r]) {
+            if (D[l] == t) {
+                res = l;
+                break;
+            } else {
+                break;
+            }
+        }
+        
+        int p = l + ((t - D[l]) * (r - l)) / (D[r] - D[l]);
+        
+        if (p < l || p > r) {
+            break;
+        }
+        
+        if (D[p] == t) {
+            res = p;
+            break;
+        } else if (D[p] < t) {
+            l = p + 1;
+        } else {
+            r = p - 1;
+        }
+    }
+    
+    if (res != -1) {
+        cout << res << endl;
+    } else {
+        cout << -1 << endl;
+    }
+    
+    return 0;
+}
+</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает интерполяционный поиск?</h3>
+            <p>Интерполяционный поиск — это улучшенная версия бинарного поиска для отсортированных массивов. Вместо деления пополам он <strong>угадывает позицию</strong> элемента по формуле линейной интерполяции.</p>
+            
+            <div class="warning">
+                <p><strong>!!!</strong> В олимпиадном программировании этот алгоритм не используется. Здесь он по просьбе одного дурика.</p>
+            </div>
+            
+            <h4>Основная идея</h4>
+            <p>Представьте, что вы ищете слово в словаре. Вы не открываете его строго посередине, а прикидываете позицию по буквам. Например, если ищете "слон", откроете ближе к концу, а если "аист" — ближе к началу.</p>
+            
+            <p>Алгоритм делает то же самое:</p>
+            <ul>
+                <li>Вычисляет предполагаемую позицию по формуле:</li>
+            </ul>
+            <pre style="background: rgba(0,0,0,0.05); padding: 8px; margin: 8px 0;"><code>p = l + ((t - D[l]) * (r - l)) / (D[r] - D[l])</code></pre>
+            <ul>
+                <li>Сравнивает элемент в этой позиции с искомым</li>
+                <li>Сужает диапазон поиска и повторяет</li>
+            </ul>
+            
+            <h4>Сложность</h4>
+            <ul>
+                <li><strong>Средняя:</strong> O(log log n) — быстрее бинарного поиска</li>
+                <li><strong>Худшая:</strong> O(n) — при неравномерном распределении данных</li>
+            </ul>
+            
+            <h4>Когда использовать?</h4>
+            <ul>
+                <li> Массив отсортирован и <strong>равномерно распределён</strong> (например, числа с постоянным шагом)</li>
+                <li> Не подходит для разреженных или экспоненциальных данных</li>
+            </ul>
+        </div>
+
+        <!-- Пример -->
+        <div class="explanation">
+            <h3>Пример работы</h3>
+            <p>Для массива <code>D = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]</code> и <code>t = 70</code>:</p>
+            
+            <div class="input-example">
+                <h4>Как алгоритм угадывает позицию:</h4>
+                <pre><code>Шаг 1: l=0, r=9, D[l]=10, D[r]=100
+       p = 0 + ((70 - 10) * (9 - 0)) / (100 - 10) = 0 + (60 * 9) / 90 = 6
+       D[6] = 70 → нашли!
+
+Ответ: индекс 6</code></pre>
+                <p><strong>Результат:</strong> элемент 70 найден на индексе 6</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать интерполяционный поиск онлайн</h3>
+            <p>Введите отсортированный равномерный массив и число для поиска:</p>
+            
+            <label>Массив (числа через пробел):</label>
+            <input type="text" id="array-input" value="10 20 30 40 50 60 70 80 90 100">
+            
+            <label>Число для поиска:</label>
+            <input type="number" id="target-value" value="70">
+            
+            <div class="try-it">
+                <button onclick="runInterpolationSearch()"> Найти элемент</button>
+                <button onclick="loadExample1()">Пример: массив 10-100, ищем 70</button>
+                <button onclick="loadExample2()">Пример: массив 0-1000 с шагом 100</button>
+                <button onclick="loadExample3()">Пример: элемент не найден</button>
+            </div>
+            
+            <div class="output" id="demo-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function runInterpolationSearch() {
+            const arrayStr = document.getElementById('array-input').value;
+            const t = parseInt(document.getElementById('target-value').value);
+            
+            // Парсим массив
+            const D = arrayStr.trim().split(/\s+/).map(Number);
+            const n = D.length;
+            
+            if (n === 0) {
+                document.getElementById('demo-output').innerHTML = ' Введите массив чисел';
+                return;
+            }
+            
+            if (isNaN(t)) {
+                document.getElementById('demo-output').innerHTML = ' Введите число для поиска';
+                return;
+            }
+            
+            // Проверка на отсортированность
+            let isSorted = true;
+            for (let i = 1; i < n; i++) {
+                if (D[i] < D[i-1]) {
+                    isSorted = false;
+                    break;
+                }
+            }
+            
+            if (!isSorted) {
+                document.getElementById('demo-output').innerHTML = ' Массив не отсортирован! Интерполяционный поиск работает только с отсортированными массивами.';
+                return;
+            }
+            
+            let l = 0;
+            let r = n - 1;
+            let res = -1;
+            const steps = [];
+            
+            steps.push(`Массив: [${D.join(', ')}]`);
+            steps.push(`Ищем элемент: ${t}`);
+            steps.push(`Начало: l = ${l}, r = ${r}`);
+            
+            while (l <= r && D[l] <= t && t <= D[r]) {
+                if (D[l] === D[r]) {
+                    if (D[l] === t) {
+                        res = l;
+                        steps.push(`D[l] == D[r] == ${t} → нашли!`);
+                        break;
+                    } else {
+                        steps.push(`D[l] == D[r] != ${t} → элемент не найден`);
+                        break;
+                    }
+                }
+                
+                // Вычисляем предполагаемую позицию
+                const p = l + Math.floor((t - D[l]) * (r - l) / (D[r] - D[l]));
+                steps.push(`\nШаг: l=${l}, r=${r}`);
+                steps.push(`  Формула: p = ${l} + ((${t} - ${D[l]}) * (${r} - ${l})) / (${D[r]} - ${D[l]}) = ${p}`);
+                
+                if (p < l || p > r) {
+                    steps.push(`  p=${p} выходит за границы → элемент не найден`);
+                    break;
+                }
+                
+                steps.push(`  D[${p}] = ${D[p]}`);
+                
+                if (D[p] === t) {
+                    res = p;
+                    steps.push(`  ${D[p]} == ${t} → нашли!`);
+                    break;
+                } else if (D[p] < t) {
+                    l = p + 1;
+                    steps.push(`  ${D[p]} < ${t} → сдвигаем l = ${l}`);
+                } else {
+                    r = p - 1;
+                    steps.push(`  ${D[p]} > ${t} → сдвигаем r = ${r}`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('demo-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (res !== -1) {
+                outputDiv.innerHTML = ` Элемент <strong>${t}</strong> найден на индексе <strong>${res}</strong><br> D[${res}] = ${D[res]}`;
+            } else {
+                outputDiv.innerHTML = ` Элемент <strong>${t}</strong> не найден в массиве`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('array-input').value = '10 20 30 40 50 60 70 80 90 100';
+            document.getElementById('target-value').value = '70';
+            runInterpolationSearch();
+        }
+        
+        function loadExample2() {
+            document.getElementById('array-input').value = '0 100 200 300 400 500 600 700 800 900 1000';
+            document.getElementById('target-value').value = '500';
+            runInterpolationSearch();
+        }
+        
+        function loadExample3() {
+            document.getElementById('array-input').value = '10 20 30 40 50 60 70 80 90 100';
+            document.getElementById('target-value').value = '75';
+            runInterpolationSearch();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>

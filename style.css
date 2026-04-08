@@ -46,6 +46,71 @@ body {
         font-size: 17px;
     }
 }
+/* ========== КНОПКИ КОПИРОВАНИЯ ========== */
+.code-block {
+    position: relative;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+    font-weight: 500;
+}
+
+/* Светлая тема — до копирования */
+body.light-theme .copy-btn {
+    background: #b8d4e8;
+    color: #333;
+}
+
+body.light-theme .copy-btn:hover {
+    background: #a8c8dc;
+    transform: scale(1.02);
+}
+
+/* Тёмная тема — до копирования */
+body.dark-theme .copy-btn {
+    background: #5c6bc0;
+    color: #fff;
+}
+
+body.dark-theme .copy-btn:hover {
+    background: #6a79cc;
+    transform: scale(1.02);
+}
+
+/* После копирования — светлая тема */
+body.light-theme .copy-btn.copied {
+    background: #a8d5a2;
+    color: #333;
+}
+
+body.light-theme .copy-btn.copied:hover {
+    background: #9ac894;
+}
+
+/* После копирования — тёмная тема */
+body.dark-theme .copy-btn.copied {
+    background: #8baa88;
+    color: #fff;
+}
+
+body.dark-theme .copy-btn.copied:hover {
+    background: #7a9a77;
+}
 
 /* ========== КОТИК В ПРАВОМ НИЖНЕМ УГЛУ ========== */
 body.light-theme::after {
