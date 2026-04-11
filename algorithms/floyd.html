@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Алгоритм Флойда-Уоршелла - кратчайшие пути между всеми парами</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .matrix-viz {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .matrix-viz table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        
+        .matrix-viz td {
+            width: 50px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ccc;
+            font-family: monospace;
+        }
+        
+        body.dark-theme .matrix-viz td {
+            border-color: #555;
+        }
+        
+        .updated {
+            background-color: rgba(171, 205, 239, 0.3);
+        }
+        
+        body.dark-theme .updated {
+            background-color: rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/graphs.html" class="back-btn">← Назад к графовым алгоритмам</a>
+        
+        <header>
+            <h1>Алгоритм Флойда-Уоршелла</h1>
+            <p>Поиск кратчайших расстояний между всеми парами вершин</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>n = int(input())
+D = [list(map(int, input().split())) for _ in range(n)]
+
+for k in range(n):
+    for i in range(n):
+        for j in range(n):
+            D[i][j] = min(D[i][j], D[i][k] + D[k][j])
+
+for row in D:
+    print(*row)</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+const int INF = 1e9;
+
+int main() {
+    int n;
+    cin >> n;
+    
+    vector&lt;vector&lt;int&gt;&gt; D(n, vector&lt;int&gt;(n));
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> D[i][j];
+            if (D[i][j] == -1) D[i][j] = INF;
+        }
+    }
+    
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (D[i][k] < INF && D[k][j] < INF) {
+                    D[i][j] = min(D[i][j], D[i][k] + D[k][j]);
+                }
+            }
+        }
+    }
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (D[i][j] >= INF) cout << "-1 ";
+            else cout << D[i][j] << " ";
+        }
+        cout << "\n";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает алгоритм Флойда-Уоршелла?</h3>
+            <p><strong>Алгоритм Флойда-Уоршелла</strong> находит кратчайшие расстояния между <strong>всеми парами вершин</strong> во взвешенном графе (с возможными отрицательными рёбрами, но без отрицательных циклов).</p>
+            
+            <h4>Основная идея</h4>
+            <p>Алгоритм использует динамическое программирование. Пусть <code>D[i][j]</code> — текущее известное кратчайшее расстояние от вершины <code>i</code> до вершины <code>j</code>.</p>
+            
+            <p>На каждом шаге <code>k</code> мы пытаемся улучшить путь между всеми парами вершин, используя вершину <code>k</code> как промежуточную:</p>
+            <pre style="background: rgba(0,0,0,0.05); padding: 10px; margin: 10px 0;">D[i][j] = min(D[i][j], D[i][k] + D[k][j])</pre>
+            
+            <p><strong>Тройной вложенный цикл:</strong></p>
+            <ul>
+                <li><code>k</code> — промежуточная вершина (от 0 до n-1)</li>
+                <li><code>i</code> — начальная вершина (от 0 до n-1)</li>
+                <li><code>j</code> — конечная вершина (от 0 до n-1)</li>
+            </ul>
+            
+            <p>Если путь через вершину <code>k</code> короче текущего, мы обновляем расстояние.</p>
+            
+            <p><strong>Временная сложность: O(n³)</strong> — три вложенных цикла по n вершин.</p>
+            <p><strong>Пространственная сложность: O(n²)</strong> — матрица расстояний.</p>
+            
+            <h4>Важные замечания</h4>
+            <ul>
+                <li>Алгоритм работает с отрицательными рёбрами, но не с отрицательными циклами</li>
+                <li>Если между вершинами нет пути, расстояние остаётся бесконечностью</li>
+                <li>Порядок циклов важен: <code>k</code> должен быть самым внешним</li>
+                <li>Алгоритм одновременно находит расстояния между всеми парами</li>
+            </ul>
+        </div>
+
+        <!-- Пример -->
+        <div class="explanation">
+            <h3>Пример работы</h3>
+            <p>Рассмотрим граф из 4 вершин с матрицей весов:</p>
+            
+            <div class="input-example">
+                <pre><code>  0  5  9  4
+  5  0  2  ∞
+  9  2  0  3
+  4  ∞  3  0</code></pre>
+                
+                <h4>Пошаговое выполнение:</h4>
+                <pre><code>Шаг k=0 (промежуточная вершина 0):
+  Проверяем пути через вершину 0
+  D[2][1] = min(2, 9+5=14) → 2
+  D[3][1] = min(∞, 4+5=9) → 9
+  D[3][2] = min(3, 4+9=13) → 3
+
+Шаг k=1 (промежуточная вершина 1):
+  D[0][2] = min(9, 5+2=7) → 7
+  D[0][3] = min(4, 5+9=14) → 4
+  D[2][0] = min(9, 2+5=7) → 7
+  D[2][3] = min(3, 2+9=11) → 3
+  D[3][0] = min(4, 9+5=14) → 4
+  D[3][2] = min(3, 9+2=11) → 3
+
+Шаг k=2 (промежуточная вершина 2):
+  D[0][1] = min(5, 7+2=9) → 5
+  D[0][3] = min(4, 7+3=10) → 4
+  D[1][0] = min(5, 2+7=9) → 5
+  D[1][3] = min(∞, 2+3=5) → 5
+  D[3][0] = min(4, 3+7=10) → 4
+  D[3][1] = min(9, 3+2=5) → 5
+
+Шаг k=3 (промежуточная вершина 3):
+  D[0][1] = min(5, 4+5=9) → 5
+  D[0][2] = min(7, 4+3=7) → 7
+  D[1][0] = min(5, 5+4=9) → 5
+  D[1][2] = min(2, 5+3=8) → 2
+  D[2][0] = min(7, 3+4=7) → 7
+  D[2][1] = min(2, 3+5=8) → 2
+
+Результат:
+  0  5  7  4
+  5  0  2  5
+  7  2  0  3
+  4  5  3  0</code></pre>
+                <p><strong>Итоговая матрица кратчайших расстояний между всеми парами вершин</strong></p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать алгоритм онлайн</h3>
+            <p>Введите матрицу смежности (n×n, где ∞ = -1 или большое число):</p>
+            
+            <label>Количество вершин (n):</label>
+            <input type="number" id="n-vertices" value="4" min="1" max="6">
+            
+            <label>Матрица смежности (через пробел, строки разделяйте enter):</label>
+            <textarea id="matrix-input" rows="6" placeholder="0 5 9 4
+5 0 2 -1
+9 2 0 3
+4 -1 3 0"></textarea>
+            
+            <div class="try-it">
+                <button onclick="runFloyd()"> Найти кратчайшие пути</button>
+                <button onclick="loadExample1()">Пример 1: граф из 4 вершин</button>
+                <button onclick="loadExample2()">Пример 2: граф из 5 вершин</button>
+            </div>
+            
+            <div class="output" id="demo-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function runFloyd() {
+            const n = parseInt(document.getElementById('n-vertices').value);
+            const matrixText = document.getElementById('matrix-input').value;
+            const lines = matrixText.trim().split('\n');
+            
+            if (isNaN(n) || n < 1) {
+                document.getElementById('demo-output').innerHTML = ' Введите корректное количество вершин (n ≥ 1)';
+                return;
+            }
+            
+            const INF = 1e9;
+            let D = Array(n).fill().map(() => Array(n).fill(0));
+            
+            // Парсим матрицу
+            for (let i = 0; i < n; i++) {
+                if (i >= lines.length) {
+                    document.getElementById('demo-output').innerHTML = ` Не хватает строк в матрице (нужно ${n} строк)`;
+                    return;
+                }
+                const parts = lines[i].trim().split(/\s+/);
+                if (parts.length < n) {
+                    document.getElementById('demo-output').innerHTML = ` В строке ${i+1} не хватает элементов (нужно ${n})`;
+                    return;
+                }
+                for (let j = 0; j < n; j++) {
+                    let val = parts[j];
+                    if (val === '∞' || val === 'inf' || val === '-1' || val === 'INF') {
+                        D[i][j] = INF;
+                    } else {
+                        const num = parseInt(val);
+                        if (isNaN(num)) {
+                            document.getElementById('demo-output').innerHTML = ` Ошибка в строке ${i+1}, элемент ${j+1}: "${val}" не число`;
+                            return;
+                        }
+                        D[i][j] = num;
+                    }
+                }
+            }
+            
+            const steps = [];
+            steps.push(`Начальная матрица расстояний:`);
+            for (let i = 0; i < n; i++) {
+                steps.push(`  ${D[i].map(v => v >= INF ? '∞' : v).join(' ')}`);
+            }
+            steps.push(``);
+            
+            // Копируем для отображения шагов
+            const dist = D.map(row => [...row]);
+            
+            for (let k = 0; k < n; k++) {
+                steps.push(`Шаг k = ${k} (промежуточная вершина ${k}):`);
+                let updated = false;
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        if (dist[i][k] < INF && dist[k][j] < INF) {
+                            const newDist = dist[i][k] + dist[k][j];
+                            if (newDist < dist[i][j]) {
+                                steps.push(`  D[${i}][${j}] = min(${dist[i][j] === INF ? '∞' : dist[i][j]}, ${dist[i][k]} + ${dist[k][j]} = ${newDist}) = ${newDist}`);
+                                dist[i][j] = newDist;
+                                updated = true;
+                            }
+                        }
+                    }
+                }
+                if (!updated) {
+                    steps.push(`  Нет обновлений на этом шаге`);
+                }
+                steps.push(`  Матрица после шага ${k}:`);
+                for (let i = 0; i < n; i++) {
+                    steps.push(`    ${dist[i].map(v => v >= INF ? '∞' : v).join(' ')}`);
+                }
+                steps.push(``);
+            }
+            
+            steps.push(`Итоговая матрица кратчайших расстояний:`);
+            for (let i = 0; i < n; i++) {
+                steps.push(`  ${dist[i].map(v => v >= INF ? '∞' : v).join(' ')}`);
+            }
+            
+            const outputDiv = document.getElementById('demo-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            let resultHtml = ` Матрица кратчайших расстояний:<br><br>`;
+            for (let i = 0; i < n; i++) {
+                resultHtml += ` ${dist[i].map(v => v >= INF ? '∞' : v).join(' ')}<br>`;
+            }
+            outputDiv.innerHTML = resultHtml;
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('n-vertices').value = '4';
+            document.getElementById('matrix-input').value = `0 5 9 4
+5 0 2 -1
+9 2 0 3
+4 -1 3 0`;
+            runFloyd();
+        }
+        
+        function loadExample2() {
+            document.getElementById('n-vertices').value = '5';
+            document.getElementById('matrix-input').value = `0 3 8 -1 -4
+3 0 -1 1 7
+8 -1 0 2 -5
+-1 1 2 0 6
+-4 7 -5 6 0`;
+            runFloyd();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>
