@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Имитация отжига - метаэвристический алгоритм оптимизации</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .explanation-text {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/search.html" class="back-btn">← Назад к алгоритмам поиска</a>
+        
+        <header>
+            <h1>Имитация отжига</h1>
+            <p>Метаэвристический алгоритм для решения задач оптимизации</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>import random
+import math
+
+def ok(A):
+    z = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            if abs(i - j) == abs(A[i] - A[j]):
+                z += 1
+    return z
+
+n = int(input())
+t = 10000.0
+A = list(range(1, n + 1))
+random.shuffle(A)
+ans = ok(A)
+C = list(A)
+z = ans
+
+while z > 0:
+    i = random.randint(0, n - 1)
+    j = random.randint(0, n - 1)
+    if i == j:
+        continue
+    A[i], A[j] = A[j], A[i]
+    val = ok(A)
+    if val < ans or random.random() < math.exp((ans - val) / t):
+        ans = val
+        if val == 0:
+            C = list(A)
+            z = val
+            break
+    else:
+        A[i], A[j] = A[j], A[i]
+    t *= 0.99
+
+print(*C)</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int ok(const vector&lt;int&gt;&amp; A, int n) {
+    int z = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            if (abs(i - j) == abs(A[i] - A[j])) {
+                z++;
+            }
+        }
+    }
+    return z;
+}
+
+int main() {
+    srand(time(0));
+    int n;
+    cin >> n;
+    
+    double t = 10000.0;
+    vector&lt;int&gt; A(n);
+    for (int i = 0; i < n; ++i) {
+        A[i] = i + 1;
+    }
+    
+    random_shuffle(A.begin(), A.end());
+    
+    int ans = ok(A, n);
+    vector&lt;int&gt; C = A;
+    int z = ans;
+    
+    while (z > 0) {
+        int i = rand() % n;
+        int j = rand() % n;
+        if (i == j) continue;
+        
+        swap(A[i], A[j]);
+        int val = ok(A, n);
+        
+        double random_value = (double)rand() / RAND_MAX;
+        if (val < ans || random_value < exp((ans - val) / t)) {
+            ans = val;
+            if (val == 0) {
+                C = A;
+                z = val;
+                break;
+            }
+        } else {
+            swap(A[i], A[j]);
+        }
+        
+        t *= 0.99;
+    }
+    
+    for (int num : C) {
+        cout << num << " ";
+    }
+    cout << endl;
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает имитация отжига?</h3>
+            <p><strong>Имитация отжига (Simulated Annealing)</strong> — это вероятностный алгоритм глобальной оптимизации, вдохновлённый процессом отжига в металлургии. Он позволяет находить приближённые решения сложных задач оптимизации.</p>
+            
+            <div class="explanation-text">
+                <h4>Основная идея</h4>
+                <p>В отличие от жадных алгоритмов, которые могут застрять в локальном минимуме, имитация отжига с некоторой вероятностью принимает ухудшающие решения, что позволяет "выпрыгнуть" из локальных оптимумов и найти глобальный минимум.</p>
+            </div>
+            
+            <h4>Параметры алгоритма</h4>
+            <ul>
+                <li><strong>t (температура):</strong> начинает с высокого значения (10000) и постепенно уменьшается (коэффициент 0.99)</li>
+                <li><strong>Функция цели (ok):</strong> оценивает качество текущего решения (в данном случае — количество конфликтующих пар ферзей)</li>
+                <li><strong>Соседнее решение:</strong> меняем местами две случайные позиции</li>
+            </ul>
+            
+            <h4>Правило принятия решения</h4>
+            <p>Новое решение принимается, если:</p>
+            <ul>
+                <li>Оно лучше текущего (val < ans)</li>
+                <li>Или с вероятностью exp((ans - val) / t), даже если оно хуже (чем выше температура, тем выше вероятность)</li>
+            </ul>
+            
+            <h4>Задача о ферзях</h4>
+            <p>В данной реализации алгоритм ищет расстановку n ферзей на доске n×n так, чтобы они не атаковали друг друга. Оптимальное решение — когда количество конфликтующих пар равно 0.</p>
+            
+            <p><strong>Временная сложность:</strong> зависит от количества итераций (обычно O(n² × итераций)).</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n</code> — размер доски и количество ферзей</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Перестановка чисел от 1 до n, где A[i] — позиция ферзя в i-м столбце</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>8</code></pre>
+                <p><strong>Вывод (пример): 5 1 8 4 2 7 3 6</strong></p>
+                <p>Это одна из возможных расстановок 8 ферзей, где никакие два не атакуют друг друга.</p>
+            </div>
+            
+            <div class="note">
+                <p>Примечание: алгоритм вероятностный, поэтому при разных запусках могут получаться разные решения. Для n=8 решение всегда существует.</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать имитацию отжига онлайн</h3>
+            <p>Введите количество ферзей (размер доски):</p>
+            
+            <label>n (размер доски):</label>
+            <input type="number" id="n-queens" value="8" min="4" max="20">
+            
+            <div class="try-it">
+                <button onclick="runAnnealing()">Запустить</button>
+                <button onclick="loadExample1()">Пример: n = 8</button>
+                <button onclick="loadExample2()">Пример: n = 10</button>
+                <button onclick="loadExample3()">Пример: n = 20</button>
+            </div>
+            
+            <div class="output" id="annealing-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Процесс отжига:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function ok(A, n) {
+            let z = 0;
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    if (Math.abs(i - j) === Math.abs(A[i] - A[j])) {
+                        z++;
+                    }
+                }
+            }
+            return z;
+        }
+        
+        function runAnnealing() {
+            const n = parseInt(document.getElementById('n-queens').value);
+            
+            if (isNaN(n) || n < 4) {
+                document.getElementById('annealing-output').innerHTML = 'Введите n >= 4';
+                return;
+            }
+            
+            // Инициализация
+            let A = [];
+            for (let i = 0; i < n; i++) {
+                A.push(i + 1);
+            }
+            
+            // Перемешиваем
+            for (let i = n - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [A[i], A[j]] = [A[j], A[i]];
+            }
+            
+            let t = 10000.0;
+            let ans = ok(A, n);
+            let C = [...A];
+            let z = ans;
+            let iterations = 0;
+            const steps = [];
+            
+            steps.push(`Начальная перестановка: [${A.join(', ')}]`);
+            steps.push(`Начальное количество конфликтов: ${ans}`);
+            steps.push(`Начальная температура: 10000.0\n`);
+            
+            while (z > 0 && iterations < 5000) {
+                iterations++;
+                
+                // Выбираем две случайные позиции
+                let i = Math.floor(Math.random() * n);
+                let j = Math.floor(Math.random() * n);
+                if (i === j) continue;
+                
+                // Пробуем поменять местами
+                [A[i], A[j]] = [A[j], A[i]];
+                const val = ok(A, n);
+                
+                const randomVal = Math.random();
+                const probability = Math.exp((ans - val) / t);
+                
+                if (val < ans || randomVal < probability) {
+                    // Принимаем новое решение
+                    if (iterations % 200 === 0) {
+                        steps.push(`Итерация ${iterations}: новая перестановка, конфликтов = ${val}, температура = ${t.toFixed(2)}`);
+                        if (val < ans) {
+                            steps.push(`  Улучшение! (${ans} → ${val})`);
+                        } else {
+                            steps.push(`  Принято ухудшение с вероятностью ${probability.toFixed(4)}`);
+                        }
+                    }
+                    ans = val;
+                    if (val === 0) {
+                        C = [...A];
+                        z = val;
+                        steps.push(`\nНайдено решение! Конфликтов = 0 через ${iterations} итераций`);
+                        break;
+                    }
+                } else {
+                    // Откатываем изменение
+                    [A[i], A[j]] = [A[j], A[i]];
+                }
+                
+                // Охлаждаем температуру
+                t *= 0.99;
+            }
+            
+            steps.push(`\nИтоговая перестановка: [${C.join(', ')}]`);
+            steps.push(`Количество конфликтов: ${ans}`);
+            
+            if (ans === 0) {
+                steps.push(`\nРешение найдено! Ферзи не атакуют друг друга.`);
+            } else {
+                steps.push(`\nЗа ${iterations} итераций не удалось найти решение. Попробуйте ещё раз.`);
+            }
+            
+            const outputDiv = document.getElementById('annealing-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            outputDiv.innerHTML = `Найденная перестановка: [${C.join(', ')}]<br>Конфликтов: ${ans}<br>Итераций: ${iterations}`;
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('n-queens').value = '8';
+            runAnnealing();
+        }
+        
+        function loadExample2() {
+            document.getElementById('n-queens').value = '10';
+            runAnnealing();
+        }
+        
+        function loadExample3() {
+            document.getElementById('n-queens').value = '20';
+            runAnnealing();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Дерево Фенвика - массовое прибавление на отрезке и точечный запрос</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .formula {
+            font-family: monospace;
+            background: rgba(0,0,0,0.05);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/trees.html" class="back-btn">← Назад к структурам данных</a>
+        
+        <header>
+            <h1>Дерево Фенвика (массовое обновление)</h1>
+            <p>Прибавление на отрезке и точечный запрос за O(log n)</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python (реализация)</div>
+                <pre><code>n, m = map(int, input().split())
+F = [[0] * 2 for _ in range(n + 1)]
+
+def get1(r, f):
+    z = 0
+    while r > 0:
+        z += F[r][f]
+        r -= r & -r
+    return z
+
+def get(r):
+    return get1(r, 0) * r - get1(r, 1)
+
+def add1(i, x, f):
+    while i <= n:
+        F[i][f] += x
+        i += i & -i
+
+def add(l, r, x):
+    add1(l, x, 0)
+    add1(r + 1, -x, 0)
+    add1(l, x * (l - 1), 1)
+    add1(r + 1, -x * r, 1)
+
+for _ in range(m):
+    s = list(input().split())
+    if s[0] == "+":
+        l, r, x = int(s[1]), int(s[2]), int(s[3])
+        add(l, r, x)
+    else:
+        print(get(int(s[1])) - get(int(s[1]) - 1))</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++ (реализация)</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+int n;
+vector&lt;vector&lt;ll&gt;&gt; F;
+
+ll get1(int r, int f) {
+    ll z = 0;
+    while (r > 0) {
+        z += F[r][f];
+        r -= r & -r;
+    }
+    return z;
+}
+
+ll get(int r) {
+    return get1(r, 0) * r - get1(r, 1);
+}
+
+void add1(int i, ll x, int f) {
+    while (i <= n) {
+        F[i][f] += x;
+        i += i & -i;
+    }
+}
+
+void add(int l, int r, ll x) {
+    add1(l, x, 0);
+    add1(r + 1, -x, 0);
+    add1(l, x * (l - 1), 1);
+    add1(r + 1, -x * r, 1);
+}
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    int m;
+    cin >> n >> m;
+    
+    F.assign(n + 1, vector&lt;ll&gt;(2, 0));
+    
+    for (int i = 0; i < m; i++) {
+        char type;
+        cin >> type;
+        if (type == '+') {
+            int l, r, x;
+            cin >> l >> r >> x;
+            add(l, r, x);
+        } else {
+            int p;
+            cin >> p;
+            cout << get(p) - get(p - 1) << "\n";
+        }
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает дерево Фенвика для массовых обновлений?</h3>
+            <p><strong>Модифицированное дерево Фенвика</strong> позволяет выполнять прибавление на отрезке [l, r] и точечный запрос значения элемента за O(log n). Для этого используется техника двух массивов — диапазонных и точечных запросов.</p>
+            
+            <div class="explanation-text">
+                <h4>Основная идея</h4>
+                <p>Вместо хранения самих значений, мы храним два дерева Фенвика, которые позволяют восстановить значение элемента через сумму вкладов от всех обновлений.</p>
+            </div>
+            
+            <div class="formula">
+                <strong>Формула для значения в точке p:</strong><br>
+                value(p) = get1(p, 0) * p - get1(p, 1)
+            </div>
+            
+            <h4>Прибавление на отрезке [l, r] на x</h4>
+            <ul>
+                <li>add1(l, x, 0) — добавляем x в первое дерево на l</li>
+                <li>add1(r+1, -x, 0) — вычитаем x из первого дерева на r+1</li>
+                <li>add1(l, x*(l-1), 1) — добавляем x*(l-1) во второе дерево на l</li>
+                <li>add1(r+1, -x*r, 1) — вычитаем x*r из второго дерева на r+1</li>
+            </ul>
+            
+            <h4>Точечный запрос</h4>
+            <p>Значение элемента p = get(p) - get(p-1), где get(r) — сумма префикса.</p>
+            
+            <p><strong>Сложность операций: O(log n)</strong> — каждая операция выполняется за время, пропорциональное количеству битов.</p>
+            <p><strong>Пространственная сложность: O(n)</strong> — два дерева размера n+1.</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n m</code> — количество элементов и количество запросов</li>
+                <li>Далее m строк с запросами:
+                    <ul>
+                        <li><code>+ l r x</code> — прибавить x ко всем элементам на отрезке [l, r]</li>
+                        <li><code>? p</code> — вывести значение элемента p</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Для каждого запроса ? p вывести значение элемента p</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>10 6
++ 1 5 3
+? 3
++ 3 7 2
+? 3
+? 5
++ 1 10 1
+? 5</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>3
+5
+5
+2</code></pre>
+                <p>Пояснение:<br>
+                Изначально все нули.<br>
+                После + 1 5 3: A[3] = 3 → вывод 3<br>
+                После + 3 7 2: A[3] = 3+2=5, A[5] = 3+2=5 → вывод 5, 5<br>
+                После + 1 10 1: A[5] = 5+1=6 → вывод 6</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать массовое дерево Фенвика онлайн</h3>
+            <p>Введите запросы:</p>
+            
+            <label>Количество элементов (n):</label>
+            <input type="number" id="n-fenwick-range" value="10" min="1" max="20">
+            
+            <label>Запросы (каждый с новой строки):</label>
+            <textarea id="queries-fenwick-range-input" rows="8">+ 1 5 3
+? 3
++ 3 7 2
+? 3
+? 5
++ 1 10 1
+? 5</textarea>
+            
+            <div class="try-it">
+                <button onclick="runFenwickRange()">Запустить</button>
+                <button onclick="loadRangeExample1()">Пример 1 (массовые обновления)</button>
+                <button onclick="loadRangeExample2()">Пример 2 (много обновлений)</button>
+            </div>
+            
+            <div class="output" id="fenwick-range-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        class FenwickRange {
+            constructor(n) {
+                this.n = n;
+                this.bit0 = new Array(n + 1).fill(0);
+                this.bit1 = new Array(n + 1).fill(0);
+            }
+            
+            get1(r, bit) {
+                let z = 0;
+                while (r > 0) {
+                    z += bit[r];
+                    r -= r & -r;
+                }
+                return z;
+            }
+            
+            get(r) {
+                return this.get1(r, this.bit0) * r - this.get1(r, this.bit1);
+            }
+            
+            add1(i, x, bit) {
+                while (i <= this.n) {
+                    bit[i] += x;
+                    i += i & -i;
+                }
+            }
+            
+            add(l, r, x) {
+                this.add1(l, x, this.bit0);
+                this.add1(r + 1, -x, this.bit0);
+                this.add1(l, x * (l - 1), this.bit1);
+                this.add1(r + 1, -x * r, this.bit1);
+            }
+            
+            query(p) {
+                return this.get(p) - this.get(p - 1);
+            }
+        }
+        
+        function runFenwickRange() {
+            const n = parseInt(document.getElementById('n-fenwick-range').value);
+            const queriesText = document.getElementById('queries-fenwick-range-input').value;
+            const lines = queriesText.trim().split('\n');
+            
+            if (isNaN(n) || n < 1) {
+                document.getElementById('fenwick-range-output').innerHTML = 'Введите корректное n (≥ 1)';
+                return;
+            }
+            
+            const ft = new FenwickRange(n);
+            const results = [];
+            let currentArray = new Array(n + 1).fill(0);
+            const steps = [];
+            
+            steps.push(`Изначальный массив: [${currentArray.slice(1).join(', ')}]`);
+            steps.push(`n = ${n}\n`);
+            
+            for (let idx = 0; idx < lines.length; idx++) {
+                const parts = lines[idx].trim().split(/\s+/);
+                if (parts.length === 0) continue;
+                
+                const cmd = parts[0];
+                if (cmd === '+') {
+                    const l = parseInt(parts[1]);
+                    const r = parseInt(parts[2]);
+                    const x = parseInt(parts[3]);
+                    ft.add(l, r, x);
+                    for (let i = l; i <= r; i++) {
+                        currentArray[i] += x;
+                    }
+                    steps.push(`\nЗапрос ${idx + 1}: + ${l} ${r} ${x} → прибавили ${x} к [${l}, ${r}]`);
+                } else if (cmd === '?') {
+                    const p = parseInt(parts[1]);
+                    const val = ft.query(p);
+                    results.push(val);
+                    steps.push(`\nЗапрос ${idx + 1}: ? ${p} → значение A[${p}] = ${val}`);
+                    steps.push(`  Текущий массив: [${currentArray.slice(1).join(', ')}]`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('fenwick-range-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (results.length === 0) {
+                outputDiv.innerHTML = `Нет запросов типа ?`;
+            } else {
+                outputDiv.innerHTML = `Результаты запросов:<br>${results.join('<br>')}`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadRangeExample1() {
+            document.getElementById('n-fenwick-range').value = '10';
+            document.getElementById('queries-fenwick-range-input').value = `+ 1 5 3
+? 3
++ 3 7 2
+? 3
+? 5
++ 1 10 1
+? 5`;
+            runFenwickRange();
+        }
+        
+        function loadRangeExample2() {
+            document.getElementById('n-fenwick-range').value = '8';
+            document.getElementById('queries-fenwick-range-input').value = `+ 1 4 2
++ 2 6 3
+? 3
+? 5
++ 3 7 1
+? 4
+? 7`;
+            runFenwickRange();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRangeExample1();
+        });
+    </script>
+</body>
+</html>

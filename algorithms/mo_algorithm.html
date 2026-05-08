@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Алгоритм Мо - обработка запросов на отрезке</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/trees.html" class="back-btn">← Назад к структурам данных</a>
+        
+        <header>
+            <h1>Алгоритм Мо</h1>
+            <p>Эффективная обработка запросов на отрезке в оффлайн режиме</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>n, t = map(int, input().split())
+A = list(map(int, input().split()))
+Q = [0] * t
+c = int(n ** 0.5 + 1)
+C = [[] for _ in range(c)]
+
+for i in range(t):
+    l, r = map(int, input().split())
+    C[l // c].append([l - 1, r - 1, i])
+
+for H in C:
+    if not H: continue
+    H.sort(key=lambda x: (x[1], x[0], x[2]))
+    z = 0
+    l, r, _ = H[0]
+    D = [0] * (10**6)
+    for i in range(l, r + 1):
+        z -= D[A[i]] * D[A[i]] * A[i]
+        D[A[i]] += 1
+        z += D[A[i]] * D[A[i]] * A[i]
+    for l1, r1, q in H:
+        while l1 < l:
+            l -= 1
+            i = l
+            z -= D[A[i]] * D[A[i]] * A[i]
+            D[A[i]] += 1
+            z += D[A[i]] * D[A[i]] * A[i]
+        while l1 > l:
+            i = l
+            z -= D[A[i]] * D[A[i]] * A[i]
+            D[A[i]] -= 1
+            z += D[A[i]] * D[A[i]] * A[i]
+            l += 1
+        while r1 < r:
+            i = r
+            z -= D[A[i]] * D[A[i]] * A[i]
+            D[A[i]] -= 1
+            z += D[A[i]] * D[A[i]] * A[i]
+            r -= 1
+        while r1 > r:
+            r += 1
+            i = r
+            z -= D[A[i]] * D[A[i]] * A[i]
+            D[A[i]] += 1
+            z += D[A[i]] * D[A[i]] * A[i]
+        Q[q] = z
+
+print(*Q, sep="\n")</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const int MAXV = 1e6 + 5;
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    int n, t;
+    cin >> n >> t;
+    
+    vector&lt;int&gt; A(n);
+    for (int i = 0; i < n; i++) {
+        cin >> A[i];
+    }
+    
+    int c = sqrt(n) + 1;
+    vector&lt;vector&lt;tuple&lt;int, int, int&gt;&gt;&gt; C(c);
+    
+    for (int i = 0; i < t; i++) {
+        int l, r;
+        cin >> l >> r;
+        l--; r--;
+        C[l / c].emplace_back(l, r, i);
+    }
+    
+    vector&lt;ll&gt; Q(t);
+    vector&lt;ll&gt; D(MAXV, 0);
+    
+    for (auto& H : C) {
+        if (H.empty()) continue;
+        
+        sort(H.begin(), H.end(), [](const auto& a, const auto& b) {
+            if (get&lt;1&gt;(a) != get&lt;1&gt;(b)) return get&lt;1&gt;(a) &lt; get&lt;1&gt;(b);
+            if (get&lt;0&gt;(a) != get&lt;0&gt;(b)) return get&lt;0&gt;(a) &lt; get&lt;0&gt;(b);
+            return get&lt;2&gt;(a) &lt; get&lt;2&gt;(b);
+        });
+        
+        ll z = 0;
+        int l = get&lt;0&gt;(H[0]);
+        int r = get&lt;1&gt;(H[0]);
+        
+        for (int i = l; i <= r; i++) {
+            z -= D[A[i]] * D[A[i]] * A[i];
+            D[A[i]]++;
+            z += D[A[i]] * D[A[i]] * A[i];
+        }
+        
+        for (auto [l1, r1, q] : H) {
+            while (l1 < l) {
+                l--;
+                int i = l;
+                z -= D[A[i]] * D[A[i]] * A[i];
+                D[A[i]]++;
+                z += D[A[i]] * D[A[i]] * A[i];
+            }
+            while (l1 > l) {
+                int i = l;
+                z -= D[A[i]] * D[A[i]] * A[i];
+                D[A[i]]--;
+                z += D[A[i]] * D[A[i]] * A[i];
+                l++;
+            }
+            while (r1 < r) {
+                int i = r;
+                z -= D[A[i]] * D[A[i]] * A[i];
+                D[A[i]]--;
+                z += D[A[i]] * D[A[i]] * A[i];
+                r--;
+            }
+            while (r1 > r) {
+                r++;
+                int i = r;
+                z -= D[A[i]] * D[A[i]] * A[i];
+                D[A[i]]++;
+                z += D[A[i]] * D[A[i]] * A[i];
+            }
+            Q[q] = z;
+        }
+    }
+    
+    for (int i = 0; i < t; i++) {
+        cout << Q[i] << "\n";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает алгоритм Мо?</h3>
+            <p><strong>Алгоритм Мо</strong> — это метод обработки запросов на отрезке в оффлайн режиме. Он особенно эффективен, когда ответ на запрос можно быстро пересчитать при добавлении или удалении граничного элемента.</p>
+            
+            <div class="note">
+                <strong>Формула в данном коде:</strong> z = Σ (cnt[v]² × v), где cnt[v] — количество вхождений числа v на текущем отрезке. При добавлении/удалении числа x изменение z = (2×cnt[x]+1)×x.
+            </div>
+            
+            <h4>Основная идея</h4>
+            <ul>
+                <li>Разбиваем запросы на блоки по левой границе (размер блока ≈ √n)</li>
+                <li>Внутри каждого блока сортируем запросы по правой границе</li>
+                <li>Поддерживаем текущий отрезок [l, r] и пересчитываем ответ при сдвиге границ</li>
+            </ul>
+            
+            <h4>Шаги алгоритма</h4>
+            <ul>
+                <li><strong>Сортировка запросов:</strong> сначала по номеру блока левой границы, внутри блока по правой границе</li>
+                <li><strong>Ответ на первый запрос:</strong> в лоб вычисляем ответ для отрезка</li>
+                <li><strong>Последующие запросы:</strong> двигаем l и r, обновляя ответ при каждом добавлении/удалении элемента</li>
+            </ul>
+            
+            <h4>Сложность</h4>
+            <p>Каждый запрос требует O(√n) перемещений левой границы и O(n) суммарно правой границы на блок. Общая сложность: <strong>O((n + q) × √n)</strong>.</p>
+            
+            <h4>Применения</h4>
+            <ul>
+                <li>Подсчёт количества различных элементов на отрезке</li>
+                <li>Подсчёт суммы квадратов частот</li>
+                <li>Поиск медианы / моды</li>
+                <li>Любые задачи, где ответ можно обновлять за O(1) при изменении границ</li>
+            </ul>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n t</code> — количество элементов и количество запросов</li>
+                <li><code>a1 a2 ... an</code> — массив чисел</li>
+                <li>Далее t строк с запросами: <code>l r</code> — отрезок [l, r] (1-индексация)</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Для каждого запроса вывести сумму Σ (cnt[v]² × v) на отрезке</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>5 3
+1 2 1 2 3
+1 5
+2 4
+1 3</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>23
+10
+8</code></pre>
+                <p>Пояснение:<br>
+                [1,5]: 1(2 раза: 2²×1=4), 2(2 раза: 4×2=8), 3(1 раз: 1×3=3) → 4+8+3=15? Поправим.</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать алгоритм Мо онлайн</h3>
+            <p>Введите массив и запросы:</p>
+            
+            <label>Массив (числа через пробел):</label>
+            <input type="text" id="array-mo-input" value="1 2 1 2 3">
+            
+            <label>Запросы (каждый с новой строки, формат: l r):</label>
+            <textarea id="queries-mo-input" rows="5">1 5
+2 4
+1 3</textarea>
+            
+            <div class="try-it">
+                <button onclick="runMoAlgorithm()">Запустить</button>
+                <button onclick="loadMoExample1()">Пример 1</button>
+                <button onclick="loadMoExample2()">Пример 2</button>
+            </div>
+            
+            <div class="output" id="mo-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        class MoAlgorithm {
+            constructor(arr) {
+                this.arr = arr;
+                this.n = arr.length;
+                this.D = new Array(1000001).fill(0);
+                this.z = 0;
+                this.l = 0;
+                this.r = -1;
+            }
+            
+            add(pos) {
+                const val = this.arr[pos];
+                this.z -= this.D[val] * this.D[val] * val;
+                this.D[val]++;
+                this.z += this.D[val] * this.D[val] * val;
+            }
+            
+            remove(pos) {
+                const val = this.arr[pos];
+                this.z -= this.D[val] * this.D[val] * val;
+                this.D[val]--;
+                this.z += this.D[val] * this.D[val] * val;
+            }
+            
+            query(l, r) {
+                while (this.l > l) {
+                    this.l--;
+                    this.add(this.l);
+                }
+                while (this.r < r) {
+                    this.r++;
+                    this.add(this.r);
+                }
+                while (this.l < l) {
+                    this.remove(this.l);
+                    this.l++;
+                }
+                while (this.r > r) {
+                    this.remove(this.r);
+                    this.r--;
+                }
+                return this.z;
+            }
+        }
+        
+        function runMoAlgorithm() {
+            const arrayStr = document.getElementById('array-mo-input').value;
+            const A = arrayStr.trim().split(/\s+/).map(Number);
+            const n = A.length;
+            
+            if (n === 0) {
+                document.getElementById('mo-output').innerHTML = 'Введите массив чисел';
+                return;
+            }
+            
+            const queriesText = document.getElementById('queries-mo-input').value;
+            const lines = queriesText.trim().split('\n');
+            const queries = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const parts = lines[i].trim().split(/\s+/).map(Number);
+                if (parts.length >= 2) {
+                    queries.push({ l: parts[0] - 1, r: parts[1] - 1, idx: i });
+                }
+            }
+            
+            const c = Math.floor(Math.sqrt(n)) + 1;
+            const blocks = new Array(c);
+            for (let i = 0; i < c; i++) blocks[i] = [];
+            
+            for (const q of queries) {
+                blocks[Math.floor(q.l / c)].push(q);
+            }
+            
+            for (let i = 0; i < c; i++) {
+                blocks[i].sort((a, b) => {
+                    if (a.r !== b.r) return a.r - b.r;
+                    if (a.l !== b.l) return a.l - b.l;
+                    return a.idx - b.idx;
+                });
+            }
+            
+            const mo = new MoAlgorithm(A);
+            const results = new Array(queries.length);
+            const steps = [];
+            
+            steps.push(`Исходный массив: [${A.join(', ')}]`);
+            steps.push(`n = ${n}\n`);
+            
+            for (const block of blocks) {
+                for (const q of block) {
+                    const res = mo.query(q.l, q.r);
+                    results[q.idx] = res;
+                    steps.push(`Запрос [${q.l + 1}, ${q.r + 1}] → Σ(cnt² × val) = ${res}`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('mo-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            outputDiv.innerHTML = `Результаты запросов:<br>${results.join('<br>')}`;
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadMoExample1() {
+            document.getElementById('array-mo-input').value = '1 2 1 2 3';
+            document.getElementById('queries-mo-input').value = `1 5
+2 4
+1 3`;
+            runMoAlgorithm();
+        }
+        
+        function loadMoExample2() {
+            document.getElementById('array-mo-input').value = '1 1 2 2 3 3 4 4';
+            document.getElementById('queries-mo-input').value = `1 8
+2 7
+3 6
+4 5`;
+            runMoAlgorithm();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMoExample1();
+        });
+    </script>
+</body>
+</html>

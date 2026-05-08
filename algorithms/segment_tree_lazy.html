@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Дерево отрезков - массовое присваивание и сумма на отрезке</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .explanation-text {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/trees.html" class="back-btn">← Назад к структурам данных</a>
+        
+        <header>
+            <h1>Дерево отрезков (ленивое обновление)</h1>
+            <p>Массовое присваивание на отрезке и запрос суммы за O(log n)</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python (реализация)</div>
+                <pre><code>n, m = map(int, input().split())
+t = [0] * (n * 4 + 1)
+p = [-1] * (n * 4 + 1)
+
+def apply(v, z, l, r):
+    t[v] = z * (r - l)
+    p[v] = z
+
+def push(v, l, r):
+    if p[v] != -1:
+        m = (l + r) // 2
+        apply(v * 2 + 1, p[v], l, m)
+        apply(v * 2 + 2, p[v], m, r)
+        p[v] = -1
+
+def update(v, l, r, ql, qr, z):
+    if r <= ql or l >= qr:
+        return
+    if l >= ql and r <= qr:
+        apply(v, z, l, r)
+        return
+    m = (l + r) // 2
+    push(v, l, r)
+    update(v * 2 + 1, l, m, ql, qr, z)
+    update(v * 2 + 2, m, r, ql, qr, z)
+    t[v] = t[v * 2 + 1] + t[v * 2 + 2]
+
+def get(v, l, r, ql, qr):
+    if r <= ql or l >= qr:
+        return 0
+    if l >= ql and r <= qr:
+        return t[v]
+    m = (l + r) // 2
+    push(v, l, r)
+    return get(v * 2 + 1, l, m, ql, qr) + get(v * 2 + 2, m, r, ql, qr)
+
+for _ in range(m):
+    L = input().split()
+    if L[0] == "Q":
+        l, r = int(L[1]), int(L[2])
+        print(get(0, 0, n, l - 1, r))
+    else:
+        l, r, a = int(L[1]), int(L[2]), int(L[3])
+        update(0, 0, n, l - 1, r, a)</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++ (реализация)</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+vector&lt;ll&gt; t, p;
+int n;
+
+void apply(int v, ll z, int l, int r) {
+    t[v] = z * (r - l);
+    p[v] = z;
+}
+
+void push(int v, int l, int r) {
+    if (p[v] != -1) {
+        int m = (l + r) / 2;
+        apply(v * 2 + 1, p[v], l, m);
+        apply(v * 2 + 2, p[v], m, r);
+        p[v] = -1;
+    }
+}
+
+void update(int v, int l, int r, int ql, int qr, ll z) {
+    if (r <= ql || l >= qr) return;
+    if (l >= ql && r <= qr) {
+        apply(v, z, l, r);
+        return;
+    }
+    int m = (l + r) / 2;
+    push(v, l, r);
+    update(v * 2 + 1, l, m, ql, qr, z);
+    update(v * 2 + 2, m, r, ql, qr, z);
+    t[v] = t[v * 2 + 1] + t[v * 2 + 2];
+}
+
+ll get(int v, int l, int r, int ql, int qr) {
+    if (r <= ql || l >= qr) return 0;
+    if (l >= ql && r <= qr) return t[v];
+    int m = (l + r) / 2;
+    push(v, l, r);
+    return get(v * 2 + 1, l, m, ql, qr) + get(v * 2 + 2, m, r, ql, qr);
+}
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    int m;
+    cin >> n >> m;
+    
+    t.assign(n * 4 + 1, 0);
+    p.assign(n * 4 + 1, -1);
+    
+    for (int i = 0; i < m; i++) {
+        char type;
+        cin >> type;
+        if (type == 'Q') {
+            int l, r;
+            cin >> l >> r;
+            cout << get(0, 0, n, l - 1, r) << "\n";
+        } else {
+            int l, r, a;
+            cin >> l >> r >> a;
+            update(0, 0, n, l - 1, r, a);
+        }
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает дерево отрезков с ленивым обновлением?</h3>
+            <p><strong>Ленивое обновление</strong> — это техника, которая позволяет выполнять массовые операции на отрезке за O(log n) вместо O(n). Вместо того чтобы обновлять каждый элемент, мы помечаем вершину дерева как "ленивую" и применяем изменение только при необходимости.</p>
+            
+            <div class="explanation-text">
+                <h4>Основные функции</h4>
+                <ul>
+                    <li><strong>apply(v, z, l, r):</strong> присваивает значение z всему отрезку [l, r) вершины v. Обновляет t[v] = z × длина_отрезка и помечает вершину как ленивую.</li>
+                    <li><strong>push(v, l, r):</strong> проталкивает ленивую метку из вершины v в её детей. Если вершина помечена, значение передаётся детям, а метка сбрасывается.</li>
+                    <li><strong>update(v, l, r, ql, qr, z):</strong> присваивает значение z всем элементам на отрезке [ql, qr). Рекурсивно спускается по дереву, применяя ленивые метки при необходимости.</li>
+                    <li><strong>get(v, l, r, ql, qr):</strong> возвращает сумму элементов на отрезке [ql, qr).</li>
+                </ul>
+            </div>
+            
+            <h4>Важные особенности</h4>
+            <ul>
+                <li><strong>Индексация:</strong> используются полуинтервалы [l, r) — стандартный подход в дереве отрезков</li>
+                <li><strong>Начальное состояние:</strong> массив изначально заполнен нулями (build не нужен)</li>
+                <li><strong>Ленивый тег p[v] = -1:</strong> означает, что вершина не помечена</li>
+                <li><strong>Длина отрезка:</strong> всегда равна r - l</li>
+            </ul>
+            
+            <p><strong>Временная сложность: O((n + m) log n)</strong> — каждый запрос и обновление выполняются за O(log n).</p>
+            <p><strong>Пространственная сложность: O(n)</strong> для хранения дерева.</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n m</code> — количество элементов и количество запросов</li>
+                <li>Далее m строк с запросами:
+                    <ul>
+                        <li><code>u l r a</code> — присвоить значение a всем элементам на отрезке [l, r]</li>
+                        <li><code>Q l r</code> — вывести сумму элементов на отрезке [l, r]</li>
+                    </ul>
+                </li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Для каждого запроса Q вывести сумму на отрезке</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>10 6
+u 1 5 3
+Q 1 5
+u 3 7 7
+Q 1 10
+u 1 10 0
+Q 1 10</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>15
+43
+0</code></pre>
+                <p>Пояснение:<br>
+                Изначально массив из 10 нулей.<br>
+                1) присвоили [1..5] = 3 → сумма[1..5] = 15<br>
+                2) присвоили [3..7] = 7 → массив: [3,3,7,7,7,7,7,0,0,0], сумма[1..10] = 43<br>
+                3) присвоили [1..10] = 0 → все нули, сумма = 0</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать ленивое дерево отрезков онлайн</h3>
+            <p>Введите запросы (u l r a — обновление, Q l r — сумма):</p>
+            
+            <label>Количество элементов (n):</label>
+            <input type="number" id="n-lazy" value="10" min="1" max="20">
+            
+            <label>Запросы (каждый с новой строки):</label>
+            <textarea id="queries-lazy-input" rows="8">u 1 5 3
+Q 1 5
+u 3 7 7
+Q 1 10
+u 1 10 0
+Q 1 10</textarea>
+            
+            <div class="try-it">
+                <button onclick="runLazySegmentTree()">Запустить</button>
+                <button onclick="loadExample1()">Пример 1 (обновления и суммы)</button>
+                <button onclick="loadExample2()">Пример 2 (много обновлений)</button>
+            </div>
+            
+            <div class="output" id="lazy-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        class LazySegmentTree {
+            constructor(n) {
+                this.n = n;
+                this.t = new Array(4 * n).fill(0);
+                this.p = new Array(4 * n).fill(-1);
+            }
+            
+            apply(v, z, l, r) {
+                this.t[v] = z * (r - l);
+                this.p[v] = z;
+            }
+            
+            push(v, l, r) {
+                if (this.p[v] !== -1) {
+                    const m = Math.floor((l + r) / 2);
+                    this.apply(v * 2 + 1, this.p[v], l, m);
+                    this.apply(v * 2 + 2, this.p[v], m, r);
+                    this.p[v] = -1;
+                }
+            }
+            
+            update(v, l, r, ql, qr, z) {
+                if (r <= ql || l >= qr) return;
+                if (l >= ql && r <= qr) {
+                    this.apply(v, z, l, r);
+                    return;
+                }
+                const m = Math.floor((l + r) / 2);
+                this.push(v, l, r);
+                this.update(v * 2 + 1, l, m, ql, qr, z);
+                this.update(v * 2 + 2, m, r, ql, qr, z);
+                this.t[v] = this.t[v * 2 + 1] + this.t[v * 2 + 2];
+            }
+            
+            get(v, l, r, ql, qr) {
+                if (r <= ql || l >= qr) return 0;
+                if (l >= ql && r <= qr) return this.t[v];
+                const m = Math.floor((l + r) / 2);
+                this.push(v, l, r);
+                return this.get(v * 2 + 1, l, m, ql, qr) + this.get(v * 2 + 2, m, r, ql, qr);
+            }
+        }
+        
+        function runLazySegmentTree() {
+            const n = parseInt(document.getElementById('n-lazy').value);
+            const queriesText = document.getElementById('queries-lazy-input').value;
+            const lines = queriesText.trim().split('\n');
+            
+            if (isNaN(n) || n < 1) {
+                document.getElementById('lazy-output').innerHTML = 'Введите корректное n (≥ 1)';
+                return;
+            }
+            
+            const seg = new LazySegmentTree(n);
+            const results = [];
+            const steps = [];
+            
+            steps.push(`Изначальный массив: [${Array(n).fill(0).join(', ')}]`);
+            steps.push(`Размер n = ${n}\n`);
+            
+            for (let idx = 0; idx < lines.length; idx++) {
+                const parts = lines[idx].trim().split(/\s+/);
+                if (parts.length < 2) continue;
+                
+                const cmd = parts[0];
+                if (cmd === 'Q') {
+                    const l = parseInt(parts[1]);
+                    const r = parseInt(parts[2]);
+                    const sum = seg.get(0, 0, n, l - 1, r);
+                    results.push(sum);
+                    steps.push(`\nЗапрос ${idx + 1}: Q ${l} ${r} → сумма на [${l}, ${r}] = ${sum}`);
+                } else if (cmd === 'u') {
+                    const l = parseInt(parts[1]);
+                    const r = parseInt(parts[2]);
+                    const a = parseInt(parts[3]);
+                    seg.update(0, 0, n, l - 1, r, a);
+                    steps.push(`\nЗапрос ${idx + 1}: u ${l} ${r} ${a} → присвоили [${l}, ${r}] = ${a}`);
+                    steps.push(`  Текущие суммы: после обновления`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('lazy-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (results.length === 0) {
+                outputDiv.innerHTML = `Нет запросов типа Q`;
+            } else {
+                outputDiv.innerHTML = `Результаты запросов:<br>${results.join('<br>')}`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('n-lazy').value = '10';
+            document.getElementById('queries-lazy-input').value = `u 1 5 3
+Q 1 5
+u 3 7 7
+Q 1 10
+u 1 10 0
+Q 1 10`;
+            runLazySegmentTree();
+        }
+        
+        function loadExample2() {
+            document.getElementById('n-lazy').value = '5';
+            document.getElementById('queries-lazy-input').value = `u 1 3 5
+Q 1 5
+u 2 4 2
+Q 1 5
+u 1 5 1
+Q 1 5`;
+            runLazySegmentTree();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>

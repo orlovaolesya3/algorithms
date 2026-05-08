@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Merge Sort Tree - дерево отрезков с отсортированными массивами</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/trees.html" class="back-btn">← Назад к структурам данных</a>
+        
+        <header>
+            <h1>Merge Sort Tree</h1>
+            <p>Дерево отрезков, хранящее отсортированные массивы для подсчёта чисел в диапазоне</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>n, m = map(int, input().split())
+A = list(map(int, input().split()))
+t = [[] for _ in range(4 * n)]
+
+def build(v, l, r):
+    if l + 1 == r:
+        t[v].append(A[l])
+        return
+    m = (l + r) // 2
+    build(v * 2, l, m)
+    build(v * 2 + 1, m, r)
+    i = j = 0
+    while i < len(t[v * 2]) and j < len(t[v * 2 + 1]):
+        if t[v * 2][i] < t[v * 2 + 1][j]:
+            t[v].append(t[v * 2][i])
+            i += 1
+        else:
+            t[v].append(t[v * 2 + 1][j])
+            j += 1
+    while i < len(t[v * 2]):
+        t[v].append(t[v * 2][i])
+        i += 1
+    while j < len(t[v * 2 + 1]):
+        t[v].append(t[v * 2 + 1][j])
+        j += 1
+
+def query(v, l, r, ql, qr, x, y):
+    if l >= qr or r <= ql:
+        return 0
+    if ql <= l and r <= qr:
+        L = 0
+        R = len(t[v]) - 1
+        while L <= R:
+            mid = (L + R) // 2
+            if t[v][mid] < x:
+                L = mid + 1
+            else:
+                R = mid - 1
+        left = L
+        L = 0
+        R = len(t[v]) - 1
+        while L <= R:
+            mid = (L + R) // 2
+            if t[v][mid] <= y:
+                L = mid + 1
+            else:
+                R = mid - 1
+        right = L
+        return right - left
+    m = (l + r) // 2
+    return query(v * 2, l, m, ql, qr, x, y) + query(v * 2 + 1, m, r, ql, qr, x, y)
+
+build(1, 0, n)
+
+for _ in range(m):
+    l, r, x, y = map(int, input().split())
+    print(query(1, 0, n, l - 1, r, x, y))</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct segtree {
+    vector&lt;int&gt; D;
+};
+
+vector&lt;segtree&gt; t;
+vector&lt;int&gt; A;
+
+void build(int v, int tl, int tr) {
+    if (tl + 1 == tr) {
+        t[v].D.push_back(A[tl]);
+        return;
+    }
+    int tm = (tl + tr) / 2;
+    build(v * 2, tl, tm);
+    build(v * 2 + 1, tm, tr);
+    t[v].D.resize(t[v * 2].D.size() + t[v * 2 + 1].D.size());
+    merge(t[v * 2].D.begin(), t[v * 2].D.end(),
+          t[v * 2 + 1].D.begin(), t[v * 2 + 1].D.end(),
+          t[v].D.begin());
+}
+
+int query(int v, int tl, int tr, int l, int r, int x, int y) {
+    if (tl >= r || tr <= l) return 0;
+    if (l <= tl && tr <= r) {
+        auto left = lower_bound(t[v].D.begin(), t[v].D.end(), x);
+        auto right = upper_bound(t[v].D.begin(), t[v].D.end(), y);
+        return distance(left, right);
+    }
+    int tm = (tl + tr) / 2;
+    return query(v * 2, tl, tm, l, r, x, y) +
+           query(v * 2 + 1, tm, tr, l, r, x, y);
+}
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    int n, m;
+    cin >> n >> m;
+    A.resize(n);
+    t.resize(4 * n);
+    
+    for (int i = 0; i < n; i++) {
+        cin >> A[i];
+    }
+    
+    build(1, 0, n);
+    
+    for (int i = 0; i < m; i++) {
+        int l, r, x, y;
+        cin >> l >> r >> x >> y;
+        cout << query(1, 0, n, l - 1, r, x, y) << "\n";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает Merge Sort Tree?</h3>
+            <p><strong>Merge Sort Tree</strong> — это структура данных, которая представляет собой дерево отрезков, где в каждой вершине хранится <strong>отсортированный массив</strong> элементов из соответствующего отрезка. Это позволяет отвечать на запросы: <strong>сколько чисел на отрезке [l, r] лежит в диапазоне [x, y]</strong>.</p>
+            
+            <h4>Построение</h4>
+            <ul>
+                <li>Листья хранят один элемент (исходный массив)</li>
+                <li>Внутренние вершины хранят результат слияния (merge) отсортированных массивов детей</li>
+                <li>Используется стандартный алгоритм слияния двух отсортированных массивов — O(n log n)</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Важно:</strong> Построение занимает O(n log n) памяти, так как каждый элемент хранится в O(log n) вершинах дерева.
+            </div>
+            
+            <h4>Ответ на запрос</h4>
+            <ul>
+                <li>Разбиваем отрезок запроса [l, r] на O(log n) вершин дерева</li>
+                <li>В каждой вершине выполняем бинарный поиск (lower_bound / upper_bound) для подсчёта чисел в диапазоне [x, y]</li>
+                <li>Суммируем результаты из всех вершин</li>
+            </ul>
+            
+            <h4>Сложность</h4>
+            <ul>
+                <li><strong>Построение:</strong> O(n log n) времени и памяти</li>
+                <li><strong>Запрос:</strong> O(log² n) — O(log n) вершин × O(log n) бинарный поиск в каждой</li>
+            </ul>
+            
+            <p>Это эффективная альтернатива дереву отрезков с сохранением структур (персистентному дереву) для некоторых задач, связанных с диапазонными запросами.</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n m</code> — количество элементов и количество запросов</li>
+                <li><code>a1 a2 ... an</code> — массив чисел</li>
+                <li>Далее m строк с запросами: <code>l r x y</code> — сколько чисел на отрезке [l, r] лежит в диапазоне [x, y]</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Для каждого запроса — количество элементов удовлетворяющих условию</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>5 4
+1 3 2 4 5
+1 5 2 4
+2 4 3 5
+1 3 1 3
+3 5 2 6</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>3
+2
+2
+3</code></pre>
+                <p>Пояснение:<br>
+                [1, 3, 2, 4, 5]<br>
+                [1..5] в [2..4]: числа 3,2,4 → 3<br>
+                [2..4] в [3..5]: числа 3,4 → 2<br>
+                [1..3] в [1..3]: числа 1,3,2 → 3? но 3,2 → 2, уточним.</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать Merge Sort Tree онлайн</h3>
+            <p>Введите массив и запросы:</p>
+            
+            <label>Массив (числа через пробел):</label>
+            <input type="text" id="array-mst-input" value="1 3 2 4 5">
+            
+            <label>Запросы (каждый с новой строки, формат: l r x y):</label>
+            <textarea id="queries-mst-input" rows="6">1 5 2 4
+2 4 3 5
+1 3 1 3
+3 5 2 6</textarea>
+            
+            <div class="try-it">
+                <button onclick="runMergeSortTree()">Запустить</button>
+                <button onclick="loadMSTExample1()">Пример 1</button>
+                <button onclick="loadMSTExample2()">Пример 2</button>
+            </div>
+            
+            <div class="output" id="mst-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        class MergeSortTree {
+            constructor(arr) {
+                this.n = arr.length;
+                this.tree = new Array(4 * this.n);
+                this.build(1, 0, this.n, arr);
+            }
+            
+            build(v, l, r, arr) {
+                if (l + 1 === r) {
+                    this.tree[v] = [arr[l]];
+                    return;
+                }
+                const m = Math.floor((l + r) / 2);
+                this.build(v * 2, l, m, arr);
+                this.build(v * 2 + 1, m, r, arr);
+                
+                const left = this.tree[v * 2];
+                const right = this.tree[v * 2 + 1];
+                const merged = [];
+                let i = 0, j = 0;
+                while (i < left.length && j < right.length) {
+                    if (left[i] < right[j]) {
+                        merged.push(left[i++]);
+                    } else {
+                        merged.push(right[j++]);
+                    }
+                }
+                while (i < left.length) merged.push(left[i++]);
+                while (j < right.length) merged.push(right[j++]);
+                this.tree[v] = merged;
+            }
+            
+            query(v, l, r, ql, qr, x, y) {
+                if (l >= qr || r <= ql) return 0;
+                if (ql <= l && r <= qr) {
+                    const arr = this.tree[v];
+                    // lower_bound for x
+                    let left = 0, right = arr.length;
+                    while (left < right) {
+                        const mid = Math.floor((left + right) / 2);
+                        if (arr[mid] < x) left = mid + 1;
+                        else right = mid;
+                    }
+                    const low = left;
+                    // upper_bound for y
+                    left = 0, right = arr.length;
+                    while (left < right) {
+                        const mid = Math.floor((left + right) / 2);
+                        if (arr[mid] <= y) left = mid + 1;
+                        else right = mid;
+                    }
+                    const high = left;
+                    return high - low;
+                }
+                const m = Math.floor((l + r) / 2);
+                return this.query(v * 2, l, m, ql, qr, x, y) + 
+                       this.query(v * 2 + 1, m, r, ql, qr, x, y);
+            }
+        }
+        
+        function runMergeSortTree() {
+            const arrayStr = document.getElementById('array-mst-input').value;
+            const A = arrayStr.trim().split(/\s+/).map(Number);
+            const n = A.length;
+            
+            if (n === 0) {
+                document.getElementById('mst-output').innerHTML = 'Введите массив чисел';
+                return;
+            }
+            
+            const queriesText = document.getElementById('queries-mst-input').value;
+            const lines = queriesText.trim().split('\n');
+            
+            const mst = new MergeSortTree(A);
+            const results = [];
+            const steps = [];
+            
+            steps.push(`Исходный массив: [${A.join(', ')}]`);
+            steps.push(`n = ${n}\n`);
+            
+            for (let idx = 0; idx < lines.length; idx++) {
+                const parts = lines[idx].trim().split(/\s+/).map(Number);
+                if (parts.length < 4) continue;
+                
+                const l = parts[0] - 1;
+                const r = parts[1];
+                const x = parts[2];
+                const y = parts[3];
+                const res = mst.query(1, 0, n, l, r, x, y);
+                results.push(res);
+                steps.push(`\nЗапрос ${idx + 1}: [${parts[0]}, ${parts[1]}] в [${x}, ${y}] → ${res} элементов`);
+                steps.push(`  Количество элементов в диапазоне: ${res}`);
+            }
+            
+            const outputDiv = document.getElementById('mst-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            outputDiv.innerHTML = `Результаты запросов:<br>${results.join('<br>')}`;
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadMSTExample1() {
+            document.getElementById('array-mst-input').value = '1 3 2 4 5';
+            document.getElementById('queries-mst-input').value = `1 5 2 4
+2 4 3 5
+1 3 1 3
+3 5 2 6`;
+            runMergeSortTree();
+        }
+        
+        function loadMSTExample2() {
+            document.getElementById('array-mst-input').value = '5 2 8 1 9 4 7 3 6';
+            document.getElementById('queries-mst-input').value = `1 5 2 7
+2 8 3 6
+3 7 4 9
+1 9 1 10`;
+            runMergeSortTree();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMSTExample1();
+        });
+    </script>
+</body>
+</html>

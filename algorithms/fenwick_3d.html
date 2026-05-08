@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>3D дерево Фенвика - многомерное бинарное индексированное дерево</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .bit-note {
+            background: rgba(171, 205, 239, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .formula {
+            font-family: monospace;
+            background: rgba(0,0,0,0.05);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/trees.html" class="back-btn">← Назад к структурам данных</a>
+        
+        <header>
+            <h1>3D дерево Фенвика</h1>
+            <p>Многомерное бинарное индексированное дерево для трёхмерных префиксных запросов</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python (реализация)</div>
+                <pre><code>n = int(input())
+F = [[[0] * (n + 2) for _ in range(n + 2)] for _ in range(n + 2)]
+
+def get(x, y, z):
+    i = x
+    ans = 0
+    while i > 0:
+        j = y
+        while j > 0:
+            k = z
+            while k > 0:
+                ans += F[i][j][k]
+                k -= k & -k
+            j -= j & -j
+        i -= i & -i
+    return ans
+
+def add(x, y, z, d):
+    i = x
+    while i <= n:
+        j = y
+        while j <= n:
+            k = z
+            while k <= n:
+                F[i][j][k] += d
+                k += k & -k
+            j += j & -j
+        i += i & -i
+
+s = list(map(int, input().split()))
+while s[0] != 3:
+    if s[0] == 1:
+        _, x, y, z, d = s
+        x += 1
+        y += 1
+        z += 1
+        add(x, y, z, d)
+    else:
+        _, x1, y1, z1, x2, y2, z2 = s
+        x1 += 1
+        y1 += 1
+        z1 += 1
+        x2 += 1
+        y2 += 1
+        z2 += 1
+        ans = get(x2, y2, z2)
+        ans -= get(x1 - 1, y2, z2)
+        ans -= get(x2, y1 - 1, z2)
+        ans -= get(x2, y2, z1 - 1)
+        ans += get(x1 - 1, y1 - 1, z2)
+        ans += get(x1 - 1, y2, z1 - 1)
+        ans += get(x2, y1 - 1, z1 - 1)
+        ans -= get(x1 - 1, y1 - 1, z1 - 1)
+        print(ans)
+    s = list(map(int, input().split()))</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++ (реализация)</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int n;
+vector&lt;vector&lt;vector&lt;long long&gt;&gt;&gt; F;
+
+long long get(int x, int y, int z) {
+    long long ans = 0;
+    for (int i = x; i > 0; i -= i & -i) {
+        for (int j = y; j > 0; j -= j & -j) {
+            for (int k = z; k > 0; k -= k & -k) {
+                ans += F[i][j][k];
+            }
+        }
+    }
+    return ans;
+}
+
+void add(int x, int y, int z, int d) {
+    for (int i = x; i <= n; i += i & -i) {
+        for (int j = y; j <= n; j += j & -j) {
+            for (int k = z; k <= n; k += k & -k) {
+                F[i][j][k] += d;
+            }
+        }
+    }
+}
+
+int main() {
+    cin >> n;
+    F.assign(n + 2, vector&lt;vector&lt;long long&gt;&gt;(n + 2, vector&lt;long long&gt;(n + 2, 0)));
+    
+    int t;
+    while (cin >> t && t != 3) {
+        if (t == 1) {
+            int x, y, z, d;
+            cin >> x >> y >> z >> d;
+            x++; y++; z++;
+            add(x, y, z, d);
+        } else {
+            int x1, y1, z1, x2, y2, z2;
+            cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2;
+            x1++; y1++; z1++; x2++; y2++; z2++;
+            long long ans = get(x2, y2, z2);
+            ans -= get(x1 - 1, y2, z2);
+            ans -= get(x2, y1 - 1, z2);
+            ans -= get(x2, y2, z1 - 1);
+            ans += get(x1 - 1, y1 - 1, z2);
+            ans += get(x1 - 1, y2, z1 - 1);
+            ans += get(x2, y1 - 1, z1 - 1);
+            ans -= get(x1 - 1, y1 - 1, z1 - 1);
+            cout << ans << "\n";
+        }
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает 3D дерево Фенвика?</h3>
+            <p><strong>3D дерево Фенвика (3D Binary Indexed Tree)</strong> — это многомерное обобщение обычного дерева Фенвика для работы с трёхмерными массивами. Позволяет выполнять:</p>
+            <ul>
+                <li><strong>add(x, y, z, d)</strong> — добавление значения d к точке (x, y, z) за O(log³ n)</li>
+                <li><strong>get(x, y, z)</strong> — сумма в прямоугольнике от (1,1,1) до (x,y,z) за O(log³ n)</li>
+                <li><strong>Сумма в произвольном параллелепипеде</strong> — через формулу включений-исключений за O(log³ n)</li>
+            </ul>
+            
+            <h4>Основная идея</h4>
+            <p>В трёхмерном случае каждый индекс хранит сумму по некоторому трёхмерному диапазону. Обновление и запрос требуют трёх вложенных циклов по младшим битам.</p>
+            
+            <div class="bit-note">
+                <strong>Для 3D: add и get используют три вложенных цикла</strong><br>
+                Внешний по x, средний по y, внутренний по z.
+            </div>
+            
+            <h4>Формула суммы в параллелепипеде</h4>
+            <div class="formula">
+                sum(x1..x2, y1..y2, z1..z2) =<br>
+                &nbsp;&nbsp;get(x2,y2,z2)<br>
+                &nbsp;&nbsp;- get(x1-1,y2,z2) - get(x2,y1-1,z2) - get(x2,y2,z1-1)<br>
+                &nbsp;&nbsp;+ get(x1-1,y1-1,z2) + get(x1-1,y2,z1-1) + get(x2,y1-1,z1-1)<br>
+                &nbsp;&nbsp;- get(x1-1,y1-1,z1-1)
+            </div>
+            
+            <p><strong>Сложность операций: O(log³ n)</strong> — три вложенных цикла по количеству битов.</p>
+            <p><strong>Пространственная сложность: O(n³)</strong> — трёхмерный массив размером (n+1)×(n+1)×(n+1).</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li>Первая строка: n — размер трёхмерного массива (координаты от 0 до n-1, внутри переходят к 1..n)</li>
+                <li>Далее до строки "3" идут запросы:
+                    <ul>
+                        <li><code>1 x y z d</code> — добавить d к точке (x,y,z)</li>
+                        <li><code>2 x1 y1 z1 x2 y2 z2</code> — сумма в параллелепипеде [(x1,y1,z1), (x2,y2,z2)]</li>
+                        <li><code>3</code> — завершение работы</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>5
+1 0 0 0 5
+1 1 1 1 3
+2 0 0 0 2 2 2
+3</code></pre>
+                <p><strong>Вывод: 8</strong></p>
+                <p>Сначала добавили 5 в (0,0,0), затем 3 в (1,1,1). Сумма в кубе (0,0,0)-(2,2,2) = 5+3 = 8.</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать 3D дерево Фенвика онлайн</h3>
+            <p>Введите размер и запросы:</p>
+            
+            <label>Размер n:</label>
+            <input type="number" id="n-size" value="5" min="1" max="20">
+            
+            <label>Запросы (каждый с новой строки, завершите строкой 3):</label>
+            <textarea id="queries-3d-input" rows="8">1 0 0 0 5
+1 1 1 1 3
+2 0 0 0 2 2 2
+3</textarea>
+            
+            <div class="try-it">
+                <button onclick="runFenwick3D()">Запустить</button>
+                <button onclick="loadExample1()">Пример 1 (добавления и сумма)</button>
+                <button onclick="loadExample2()">Пример 2 (несколько операций)</button>
+            </div>
+            
+            <div class="output" id="fenwick3d-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        class Fenwick3D {
+            constructor(n) {
+                this.n = n;
+                this.bit = new Array(n + 2);
+                for (let i = 0; i <= n + 1; i++) {
+                    this.bit[i] = new Array(n + 2);
+                    for (let j = 0; j <= n + 1; j++) {
+                        this.bit[i][j] = new Array(n + 2);
+                        for (let k = 0; k <= n + 1; k++) {
+                            this.bit[i][j][k] = 0;
+                        }
+                    }
+                }
+            }
+            
+            get(x, y, z) {
+                let ans = 0;
+                for (let i = x; i > 0; i -= i & -i) {
+                    for (let j = y; j > 0; j -= j & -j) {
+                        for (let k = z; k > 0; k -= k & -k) {
+                            ans += this.bit[i][j][k];
+                        }
+                    }
+                }
+                return ans;
+            }
+            
+            add(x, y, z, d) {
+                for (let i = x; i <= this.n; i += i & -i) {
+                    for (let j = y; j <= this.n; j += j & -j) {
+                        for (let k = z; k <= this.n; k += k & -k) {
+                            this.bit[i][j][k] += d;
+                        }
+                    }
+                }
+            }
+            
+            rangeSum(x1, y1, z1, x2, y2, z2) {
+                let ans = this.get(x2, y2, z2);
+                ans -= this.get(x1 - 1, y2, z2);
+                ans -= this.get(x2, y1 - 1, z2);
+                ans -= this.get(x2, y2, z1 - 1);
+                ans += this.get(x1 - 1, y1 - 1, z2);
+                ans += this.get(x1 - 1, y2, z1 - 1);
+                ans += this.get(x2, y1 - 1, z1 - 1);
+                ans -= this.get(x1 - 1, y1 - 1, z1 - 1);
+                return ans;
+            }
+        }
+        
+        function runFenwick3D() {
+            const n = parseInt(document.getElementById('n-size').value);
+            const queriesText = document.getElementById('queries-3d-input').value;
+            const lines = queriesText.trim().split('\n');
+            
+            if (isNaN(n) || n < 1) {
+                document.getElementById('fenwick3d-output').innerHTML = 'Введите корректный размер n (≥ 1)';
+                return;
+            }
+            
+            const ft = new Fenwick3D(n);
+            const results = [];
+            const steps = [];
+            
+            steps.push(`Размер массива: ${n} (координаты от 0 до ${n-1})`);
+            steps.push(`Внутренние координаты: от 1 до ${n}\n`);
+            
+            for (let idx = 0; idx < lines.length; idx++) {
+                const parts = lines[idx].trim().split(/\s+/).map(Number);
+                if (parts.length === 0) continue;
+                
+                const cmd = parts[0];
+                if (cmd === 3) {
+                    steps.push(`\nКоманда 3: завершение работы`);
+                    break;
+                } else if (cmd === 1) {
+                    const [_, x, y, z, d] = parts;
+                    const x1 = x + 1;
+                    const y1 = y + 1;
+                    const z1 = z + 1;
+                    ft.add(x1, y1, z1, d);
+                    steps.push(`\nЗапрос ${idx + 1}: добавить ${d} в точку (${x},${y},${z})`);
+                    steps.push(`  Внутренние координаты: (${x1},${y1},${z1})`);
+                } else if (cmd === 2) {
+                    const [_, x1, y1, z1, x2, y2, z2] = parts;
+                    const sum = ft.rangeSum(x1 + 1, y1 + 1, z1 + 1, x2 + 1, y2 + 1, z2 + 1);
+                    results.push(sum);
+                    steps.push(`\nЗапрос ${idx + 1}: сумма в параллелепипеде (${x1},${y1},${z1}) - (${x2},${y2},${z2}) = ${sum}`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('fenwick3d-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (results.length === 0) {
+                outputDiv.innerHTML = `Нет запросов типа 2`;
+            } else {
+                outputDiv.innerHTML = `Результаты запросов суммы:<br>${results.join('<br>')}`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('n-size').value = '5';
+            document.getElementById('queries-3d-input').value = `1 0 0 0 5
+1 1 1 1 3
+2 0 0 0 2 2 2
+3`;
+            runFenwick3D();
+        }
+        
+        function loadExample2() {
+            document.getElementById('n-size').value = '5';
+            document.getElementById('queries-3d-input').value = `1 0 0 0 1
+1 0 0 1 2
+1 1 1 1 3
+2 0 0 0 2 2 2
+3`;
+            runFenwick3D();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>

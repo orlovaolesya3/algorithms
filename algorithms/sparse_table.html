@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Sparse Table - разреженная таблица для RMQ</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/trees.html" class="back-btn">← Назад к структурам данных</a>
+        
+        <header>
+            <h1>Sparse Table</h1>
+            <p>Разреженная таблица для запросов минимума на отрезке за O(1)</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python (реализация)</div>
+                <pre><code>n = int(input())
+A = list(map(int, input().split()))
+W = [0] * (n + 1)
+
+for a in range(2, n + 1):
+    W[a] = W[a // 2] + 1
+
+l = W[n] + 1
+P = [0] * l
+P[0] = 1
+for i in range(1, l):
+    P[i] = P[i - 1] * 2
+
+S = [[0] * l for _ in range(n)]
+for a in range(n):
+    S[a][0] = A[a]
+
+for i in range(1, l):
+    for a in range(n - P[i] + 1):
+        S[a][i] = min(S[a][i - 1], S[a + P[i - 1]][i - 1])
+
+m = int(input())
+for _ in range(m):
+    l, r = map(int, input().split())
+    l -= 1
+    r -= 1
+    k = W[r - l + 1]
+    print(min(S[l][k], S[r - P[k] + 1][k]), end=" ")</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++ (реализация)</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector&lt;int&gt; A(n);
+    for (int i = 0; i < n; i++) {
+        cin >> A[i];
+    }
+    
+    vector&lt;int&gt; W(n + 1, 0);
+    for (int a = 2; a <= n; a++) {
+        W[a] = W[a / 2] + 1;
+    }
+    
+    int l = W[n] + 1;
+    vector&lt;int&gt; P(l, 0);
+    P[0] = 1;
+    for (int i = 1; i < l; i++) {
+        P[i] = P[i - 1] * 2;
+    }
+    
+    vector&lt;vector&lt;int&gt;&gt; S(n, vector&lt;int&gt;(l, 0));
+    for (int a = 0; a < n; a++) {
+        S[a][0] = A[a];
+    }
+    
+    for (int i = 1; i < l; i++) {
+        for (int a = 0; a < n - P[i] + 1; a++) {
+            S[a][i] = min(S[a][i - 1], S[a + P[i - 1]][i - 1]);
+        }
+    }
+    
+    int m;
+    cin >> m;
+    for (int _ = 0; _ < m; _++) {
+        int left, right;
+        cin >> left >> right;
+        left--;
+        right--;
+        int k = W[right - left + 1];
+        cout << min(S[left][k], S[right - P[k] + 1][k]) << " ";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает Sparse Table?</h3>
+            <p><strong>Sparse Table (разреженная таблица)</strong> — это структура данных, которая позволяет отвечать на запросы минимума (или максимума, НОД, НОК) на отрезке за <strong>O(1)</strong> после предподсчёта за <strong>O(n log n)</strong>.</p>
+            
+            <p><strong>Основная идея:</strong> предвычисляем минимумы для всех отрезков длины 2^k.</p>
+            
+            <div class="explanation-text">
+                <h4>Предподсчёт</h4>
+                <ul>
+                    <li><strong>W[a]:</strong> максимальная степень двойки, не превосходящая a (W[a] = floor(log₂(a)))</li>
+                    <li><strong>P[i]:</strong> значение 2ⁱ</li>
+                    <li><strong>S[a][i]:</strong> минимум на отрезке [a, a + 2ⁱ - 1]</li>
+                </ul>
+                <p>Формула пересчёта: <code>S[a][i] = min(S[a][i-1], S[a + 2^{i-1}][i-1])</code></p>
+            </div>
+            
+            <h4>Ответ на запрос [l, r]</h4>
+            <ul>
+                <li>Находим k = floor(log₂(r - l + 1))</li>
+                <li>Ответ = min(S[l][k], S[r - 2ᵏ + 1][k])</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Важно:</strong> Sparse Table эффективна только для <strong>иденпотентных операций</strong> (min, max, gcd), потому что отрезки могут перекрываться. Для суммы она не подходит.
+            </div>
+            
+            <p><strong>Временная сложность:</strong> O(n log n) на предподсчёт, O(1) на запрос.</p>
+            <p><strong>Пространственная сложность:</strong> O(n log n) для хранения таблицы.</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n</code> — количество элементов</li>
+                <li><code>a1 a2 ... an</code> — массив чисел</li>
+                <li><code>m</code> — количество запросов</li>
+                <li><code>l r</code> — запрос минимума на отрезке [l, r] (1-индексация)</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Для каждого запроса — минимум на отрезке</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>7
+3 1 4 2 5 6 7
+4
+1 3
+2 5
+3 7
+1 7</code></pre>
+                <p><strong>Вывод: 1 2 4 1</strong></p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать Sparse Table онлайн</h3>
+            <p>Введите массив и запросы:</p>
+            
+            <label>Массив (числа через пробел):</label>
+            <input type="text" id="array-sparse" value="3 1 4 2 5 6 7">
+            
+            <label>Запросы (каждый с новой строки, формат: l r):</label>
+            <textarea id="queries-sparse-input" rows="5">1 3
+2 5
+3 7
+1 7</textarea>
+            
+            <div class="try-it">
+                <button onclick="runSparseTable()">Запустить</button>
+                <button onclick="loadExample1()">Пример 1 (базовый)</button>
+                <button onclick="loadExample2()">Пример 2 (все запросы)</button>
+            </div>
+            
+            <div class="output" id="sparse-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function runSparseTable() {
+            const arrayStr = document.getElementById('array-sparse').value;
+            const A = arrayStr.trim().split(/\s+/).map(Number);
+            const n = A.length;
+            
+            if (n === 0) {
+                document.getElementById('sparse-output').innerHTML = 'Введите массив чисел';
+                return;
+            }
+            
+            const queriesText = document.getElementById('queries-sparse-input').value;
+            const lines = queriesText.trim().split('\n');
+            
+            // Предподсчёт W и P
+            const W = new Array(n + 1).fill(0);
+            for (let a = 2; a <= n; a++) {
+                W[a] = W[Math.floor(a / 2)] + 1;
+            }
+            
+            const lvl = W[n] + 1;
+            const P = new Array(lvl).fill(0);
+            P[0] = 1;
+            for (let i = 1; i < lvl; i++) {
+                P[i] = P[i - 1] * 2;
+            }
+            
+            // Построение Sparse Table
+            const S = new Array(n);
+            for (let i = 0; i < n; i++) {
+                S[i] = new Array(lvl).fill(0);
+                S[i][0] = A[i];
+            }
+            
+            const steps = [];
+            steps.push(`Исходный массив: [${A.join(', ')}]`);
+            steps.push(`n = ${n}, максимальная степень двойки lvl = ${lvl}\n`);
+            steps.push(`Построение Sparse Table:`);
+            
+            for (let i = 1; i < lvl; i++) {
+                for (let a = 0; a < n - P[i] + 1; a++) {
+                    S[a][i] = Math.min(S[a][i - 1], S[a + P[i - 1]][i - 1]);
+                }
+                if (i < 4 || lvl <= 6) {
+                    const values = [];
+                    for (let a = 0; a < n - P[i] + 1; a++) {
+                        values.push(`[${a}..${a + P[i] - 1}] = ${S[a][i]}`);
+                    }
+                    steps.push(`  k = ${i} (длина 2^${i}=${P[i]}): ${values.join(', ')}`);
+                } else if (i === 4) {
+                    steps.push(`  ... и так до k = ${lvl - 1}`);
+                }
+            }
+            
+            // Обработка запросов
+            const results = [];
+            steps.push(`\nОбработка запросов:`);
+            
+            for (let idx = 0; idx < lines.length; idx++) {
+                const parts = lines[idx].trim().split(/\s+/);
+                if (parts.length < 2) continue;
+                
+                let left = parseInt(parts[0]) - 1;
+                let right = parseInt(parts[1]) - 1;
+                const len = right - left + 1;
+                const k = W[len];
+                const res = Math.min(S[left][k], S[right - P[k] + 1][k]);
+                results.push(res);
+                steps.push(`  Запрос ${idx + 1}: [${left+1}, ${right+1}] → длина = ${len}, k = ${k} (2^${k}=${P[k]})`);
+                steps.push(`    min = min(S[${left}][${k}]=${S[left][k]}, S[${right - P[k] + 1}][${k}]=${S[right - P[k] + 1][k]}) = ${res}`);
+            }
+            
+            const outputDiv = document.getElementById('sparse-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            outputDiv.innerHTML = `Результаты запросов: ${results.join(' ')}`;
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadExample1() {
+            document.getElementById('array-sparse').value = '3 1 4 2 5 6 7';
+            document.getElementById('queries-sparse-input').value = `1 3
+2 5
+3 7
+1 7`;
+            runSparseTable();
+        }
+        
+        function loadExample2() {
+            document.getElementById('array-sparse').value = '5 2 8 1 9 4 7 3 6';
+            document.getElementById('queries-sparse-input').value = `1 5
+2 8
+3 7
+1 9`;
+            runSparseTable();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample1();
+        });
+    </script>
+</body>
+</html>
