@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Z-функция - поиск подстроки в строке</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/strings.html" class="back-btn">← Назад к алгоритмам со строками</a>
+        
+        <header>
+            <h1>Z-функция</h1>
+            <p>Поиск всех вхождений подстроки в строку за O(n + m)</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>def z_function(s):
+    n = len(s)
+    Z = [0] * n
+    l = 0
+    r = 0
+    for i in range(1, n):
+        if i <= r:
+            Z[i] = min(r - i + 1, Z[i - l])
+        while i + Z[i] < n and s[Z[i]] == s[i + Z[i]]:
+            Z[i] += 1
+        if i + Z[i] - 1 > r:
+            l = i
+            r = i + Z[i] - 1
+    return Z
+
+s = input()
+p = input()
+t = p + '#' + s
+Z = z_function(t)
+m = len(p)
+ANS = [i - m - 1 for i in range(len(t)) if Z[i] == m]
+print(len(ANS))
+print(*[x + 1 for x in ANS])</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+vector&lt;ll&gt; z_function(const string&amp; s) {
+    ll n = s.size();
+    vector&lt;ll&gt; Z(n, 0);
+    ll l = 0, r = 0;
+    for (ll i = 1; i < n; i++) {
+        if (i <= r) {
+            Z[i] = min(r - i + 1, Z[i - l]);
+        }
+        while (i + Z[i] < n &amp;&amp; s[Z[i]] == s[i + Z[i]]) {
+            Z[i]++;
+        }
+        if (i + Z[i] - 1 > r) {
+            r = i + Z[i] - 1;
+            l = i;
+        }
+    }
+    return Z;
+}
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    string s, p;
+    cin >> s >> p;
+    
+    string t = p + "#" + s;
+    vector&lt;ll&gt; Z = z_function(t);
+    
+    ll m = p.size();
+    vector&lt;ll&gt; ans;
+    for (ll i = 0; i < (ll)t.size(); i++) {
+        if (Z[i] == m) {
+            ans.push_back(i - m - 1);
+        }
+    }
+    
+    cout << ans.size() << "\n";
+    for (ll x : ans) {
+        cout << x + 1 << " ";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает Z-функция?</h3>
+            <p><strong>Z-функция</strong> — это массив, где Z[i] равно длине наибольшего общего префикса строки s и её суффикса, начинающегося с позиции i. Алгоритм позволяет эффективно решать задачу поиска подстроки в строке за O(n + m).</p>
+            
+            <div class="note">
+                <strong>Ключевая идея:</strong> Строим конкатенированную строку t = p + "#" + s, где # — разделитель, не встречающийся в строках. Затем вычисляем Z-функцию для t. Все позиции, где Z[i] = m (длина образца), соответствуют вхождениям образца в текст.
+            </div>
+            
+            <h4>Алгоритм вычисления Z-функции</h4>
+            <ul>
+                <li><strong>l, r</strong> — границы текущего отрезка [l, r], для которого известно, что s[l..r] совпадает с префиксом строки</li>
+                <li><strong>Z[0]</strong> обычно равно 0 или длине строки (по определению)</li>
+                <li>Для i от 1 до n-1:
+                    <ul>
+                        <li>Если i внутри текущего отрезка (i ≤ r), то Z[i] ≥ min(r - i + 1, Z[i - l])</li>
+                        <li>Затем пытаемся увеличить Z[i] прямым сравнением</li>
+                        <li>Если i + Z[i] - 1 > r, обновляем l и r</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h4>Применение для поиска подстроки</h4>
+            <ul>
+                <li>Строим t = p + '#' + s</li>
+                <li>Вычисляем Z-функцию для t</li>
+                <li>Если Z[i] == |p|, то в позиции i начинается вхождение образца</li>
+                <li>Позиция в исходном тексте: i - |p| - 1</li>
+            </ul>
+            
+            <p><strong>Временная сложность:</strong> O(n + m) — линейный проход по строке.</p>
+            <p><strong>Пространственная сложность:</strong> O(n + m) для хранения массива Z.</p>
+            
+            <div class="note">
+                <strong>Преимущества:</strong> Алгоритм очень прост в реализации и работает за линейное время.
+            </div>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li>Первая строка — текст s</li>
+                <li>Вторая строка — образец p</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Первая строка — количество вхождений</li>
+                <li>Вторая строка — позиции вхождений (1-индексация) в порядке возрастания</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>abacabadabacaba
+aba</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>4
+1 5 9 13</code></pre>
+                <p>Пояснение: образец "aba" встречается в позициях 1, 5, 9, 13 (1-индексация).</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать Z-функцию онлайн</h3>
+            <p>Введите текст и образец для поиска:</p>
+            
+            <label>Текст s:</label>
+            <input type="text" id="text-z-input" value="abacabadabacaba">
+            
+            <label>Образец p:</label>
+            <input type="text" id="pattern-z-input" value="aba">
+            
+            <div class="try-it">
+                <button onclick="runZFunction()">Запустить</button>
+                <button onclick="loadZExample1()">Пример 1</button>
+                <button onclick="loadZExample2()">Пример 2</button>
+            </div>
+            
+            <div class="output" id="z-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        function zFunction(s) {
+            const n = s.length;
+            const Z = new Array(n).fill(0);
+            let l = 0, r = 0;
+            for (let i = 1; i < n; i++) {
+                if (i <= r) {
+                    Z[i] = Math.min(r - i + 1, Z[i - l]);
+                }
+                while (i + Z[i] < n && s[Z[i]] === s[i + Z[i]]) {
+                    Z[i]++;
+                }
+                if (i + Z[i] - 1 > r) {
+                    l = i;
+                    r = i + Z[i] - 1;
+                }
+            }
+            return Z;
+        }
+        
+        function runZFunction() {
+            const s = document.getElementById('text-z-input').value;
+            const p = document.getElementById('pattern-z-input').value;
+            
+            if (!s || !p) {
+                document.getElementById('z-output').innerHTML = 'Введите текст и образец';
+                return;
+            }
+            
+            const t = p + '#' + s;
+            const Z = zFunction(t);
+            const m = p.length;
+            const positions = [];
+            
+            const steps = [];
+            steps.push(`Текст: "${s}" (длина ${s.length})`);
+            steps.push(`Образец: "${p}" (длина ${m})`);
+            steps.push(`\nСтроим строку t = p + "#" + s = "${t}"`);
+            
+            steps.push(`\nZ-функция для строки t:`);
+            for (let i = 0; i < Z.length; i++) {
+                if (Z[i] === m) {
+                    const pos = i - m - 1;
+                    positions.push(pos);
+                    steps.push(`  Z[${i}] = ${Z[i]} → совпадение! Образец в позиции ${pos + 1}`);
+                } else {
+                    steps.push(`  Z[${i}] = ${Z[i]}`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('z-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (positions.length === 0) {
+                outputDiv.innerHTML = `0\n\nОбразец не найден в тексте`;
+            } else {
+                outputDiv.innerHTML = `${positions.length}\n${positions.map(p => p + 1).join(' ')}`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadZExample1() {
+            document.getElementById('text-z-input').value = 'abacabadabacaba';
+            document.getElementById('pattern-z-input').value = 'aba';
+            runZFunction();
+        }
+        
+        function loadZExample2() {
+            document.getElementById('text-z-input').value = 'aaaaa';
+            document.getElementById('pattern-z-input').value = 'aa';
+            runZFunction();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadZExample1();
+        });
+    </script>
+</body>
+</html>

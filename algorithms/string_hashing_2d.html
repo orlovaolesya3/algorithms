@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>2D хеширование - поиск одинаковых подматриц</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/strings.html" class="back-btn">← Назад к алгоритмам со строками</a>
+        
+        <header>
+            <h1>2D хеширование</h1>
+            <p>Поиск одинаковых подматриц в матрице символов</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>mod = 10**9 + 7
+p, q = 31, 57
+
+def add(a, b):
+    if a + b >= mod:
+        return a + b - mod
+    return a + b
+
+def sub(a, b):
+    if a - b < 0:
+        return a - b + mod
+    return a - b
+
+def mul(a, b):
+    return a * b % mod
+
+n, k = map(int, input().split())
+A = [input() for _ in range(n)]
+
+H = [[0] * (k + 1) for _ in range(n + 1)]
+PU = [[0] * (k + 1) for _ in range(n + 1)]
+PV = [[0] * (k + 1) for _ in range(n + 1)]
+
+for i in range(n + 1):
+    for j in range(k + 1):
+        if i == 0 and j == 0:
+            PU[i][j] = PV[i][j] = 1
+        elif j == 0:
+            PU[i][j] = 1
+            PV[i][j] = mul(PV[i - 1][j], q)
+        elif i == 0:
+            PV[i][j] = 1
+            PU[i][j] = mul(PU[i][j - 1], p)
+        else:
+            PU[i][j] = mul(PU[i][j - 1], p)
+            PV[i][j] = mul(PV[i - 1][j], q)
+
+for i in range(n):
+    for j in range(k):
+        x = ord(A[i][j]) - ord('a') + 1
+        H[i + 1][j + 1] = add(H[i + 1][j + 1], x)
+        H[i + 1][j + 1] = add(H[i + 1][j + 1], mul(H[i + 1][j], p))
+        H[i + 1][j + 1] = add(H[i + 1][j + 1], mul(H[i][j + 1], q))
+        H[i + 1][j + 1] = sub(H[i + 1][j + 1], mul(mul(H[i][j], p), q))
+
+def func(x1, y1, x2, y2):
+    a = x2 - x1 + 1
+    b = y2 - y1 + 1
+    h0 = H[x2 + 1][y2 + 1]
+    h1 = mul(H[x2 + 1][y1], PU[a][b])
+    h2 = mul(H[x1][y2 + 1], PV[a][b])
+    h3 = mul(H[x1][y1], mul(PU[a][b], PV[a][b]))
+    h = sub(sub(h0, h1), h2)
+    h = add(h, h3)
+    return h
+
+def ok(m):
+    D = dict()
+    for i in range(n - m + 1):
+        for j in range(k - m + 1):
+            h = func(i, j, i + m - 1, j + m - 1)
+            if h in D:
+                i1, j1 = D[h]
+                return True, i, j, i1, j1
+            else:
+                D[h] = (i, j)
+    return False, -1, -1, -1, -1
+
+l, r = 0, n + 1
+while l < r - 1:
+    m = (l + r) // 2
+    f, _, _, _, _ = ok(m)
+    if f:
+        l = m
+    else:
+        r = m
+
+f, x1, y1, x2, y2 = ok(l)
+if l == 0:
+    print(0)
+else:
+    print(l)
+    print(x1 + 1, y1 + 1)
+    print(x2 + 1, y2 + 1)</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const ll mod = 1000000007;
+const ll p = 31, q = 57;
+
+ll add(ll a, ll b) {
+    if (a + b >= mod) return a + b - mod;
+    return a + b;
+}
+
+ll sub(ll a, ll b) {
+    if (a - b < 0) return a - b + mod;
+    return a - b;
+}
+
+ll mul(ll a, ll b) {
+    return a * b % mod;
+}
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    int n, k;
+    cin >> n >> k;
+    
+    vector&lt;string&gt; A(n);
+    for (int i = 0; i < n; i++) {
+        cin >> A[i];
+    }
+    
+    vector&lt;vector&lt;ll&gt;&gt; H(n + 1, vector&lt;ll&gt;(k + 1, 0));
+    vector&lt;vector&lt;ll&gt;&gt; PU(n + 1, vector&lt;ll&gt;(k + 1, 0));
+    vector&lt;vector&lt;ll&gt;&gt; PV(n + 1, vector&lt;ll&gt;(k + 1, 0));
+    
+    for (int i = 0; i <= n; i++) {
+        for (int j = 0; j <= k; j++) {
+            if (i == 0 && j == 0) {
+                PU[i][j] = PV[i][j] = 1;
+            } else if (j == 0) {
+                PU[i][j] = 1;
+                PV[i][j] = mul(PV[i - 1][j], q);
+            } else if (i == 0) {
+                PV[i][j] = 1;
+                PU[i][j] = mul(PU[i][j - 1], p);
+            } else {
+                PU[i][j] = mul(PU[i][j - 1], p);
+                PV[i][j] = mul(PV[i - 1][j], q);
+            }
+        }
+    }
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < k; j++) {
+            ll x = A[i][j] - 'a' + 1;
+            H[i + 1][j + 1] = add(H[i + 1][j + 1], x);
+            H[i + 1][j + 1] = add(H[i + 1][j + 1], mul(H[i + 1][j], p));
+            H[i + 1][j + 1] = add(H[i + 1][j + 1], mul(H[i][j + 1], q));
+            H[i + 1][j + 1] = sub(H[i + 1][j + 1], mul(mul(H[i][j], p), q));
+        }
+    }
+    
+    auto func = [&](int x1, int y1, int x2, int y2) {
+        int a = x2 - x1 + 1;
+        int b = y2 - y1 + 1;
+        ll h0 = H[x2 + 1][y2 + 1];
+        ll h1 = mul(H[x2 + 1][y1], PU[a][b]);
+        ll h2 = mul(H[x1][y2 + 1], PV[a][b]);
+        ll h3 = mul(H[x1][y1], mul(PU[a][b], PV[a][b]));
+        ll h = sub(sub(h0, h1), h2);
+        h = add(h, h3);
+        return h;
+    };
+    
+    auto ok = [&](int m) -> tuple&lt;bool, int, int, int, int&gt; {
+        unordered_map&lt;ll, pair&lt;int, int&gt;&gt; D;
+        for (int i = 0; i < n - m + 1; i++) {
+            for (int j = 0; j < k - m + 1; j++) {
+                ll h = func(i, j, i + m - 1, j + m - 1);
+                auto it = D.find(h);
+                if (it != D.end()) {
+                    auto [i1, j1] = it->second;
+                    return {true, i, j, i1, j1};
+                } else {
+                    D[h] = {i, j};
+                }
+            }
+        }
+        return {false, -1, -1, -1, -1};
+    };
+    
+    int l = 0, r = n + 1;
+    while (l < r - 1) {
+        int m = (l + r) / 2;
+        auto [f, _, __, ___, ____] = ok(m);
+        if (f) l = m;
+        else r = m;
+    }
+    
+    auto [f, x1, y1, x2, y2] = ok(l);
+    if (l == 0) {
+        cout << 0 << "\n";
+    } else {
+        cout << l << "\n";
+        cout << x1 + 1 << " " << y1 + 1 << "\n";
+        cout << x2 + 1 << " " << y2 + 1 << "\n";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает 2D хеширование?</h3>
+            <p><strong>Двумерное хеширование</strong> — это метод, который позволяет быстро вычислять хеш любой подматрицы и находить одинаковые подматрицы в матрице символов.</p>
+            
+            <div class="note">
+                <strong>Основная идея:</strong> Используем полиномиальный хеш с двумя основаниями (p для строк, q для столбцов), что позволяет однозначно идентифицировать любую подматрицу.
+            </div>
+            
+            <h4>Предподсчёт степеней</h4>
+            <ul>
+                <li><strong>PU[a][b]</strong> — p^a × q^b (степени для горизонтали и вертикали)</li>
+                <li><strong>PV[a][b]</strong> — то же самое, но для другой размерности</li>
+            </ul>
+            
+            <h4>Построение хеш-таблицы H</h4>
+            <ul>
+                <li>H[i][j] — хеш подматрицы от (0,0) до (i-1, j-1)</li>
+                <li>Используем формулу включений-исключений для пересчёта</li>
+            </ul>
+            
+            <h4>Получение хеша подматрицы</h4>
+            <div class="note">
+                Формула: h = H[x2+1][y2+1] - H[x2+1][y1]×p^b×q^a - H[x1][y2+1]×p^b×q^a + H[x1][y1]×p^b×q^a
+            </div>
+            
+            <h4>Бинарный поиск</h4>
+            <p>Алгоритм ищет максимальный размер квадратной подматрицы, которая встречается в матрице дважды (пересекаться может). Используется бинарный поиск по размеру.</p>
+            
+            <p><strong>Временная сложность:</strong> O(n×k×log n) — построение O(n×k), проверка каждого размера O(n×k).</p>
+            <p><strong>Пространственная сложность:</strong> O(n×k) для хранения хешей и степеней.</p>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li><code>n k</code> — размеры матрицы (n строк, k столбцов)</li>
+                <li>Далее n строк по k символов (строчные латинские буквы)</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Первая строка — максимальный размер одинаковых подматриц</li>
+                <li>Далее координаты первой подматрицы (x1, y1)</li>
+                <li>Координаты второй подматрицы (x2, y2)</li>
+                <li>Если размер 0, выводится только 0</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>4 4
+abac
+bcab
+caba
+abac</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>2
+1 1
+3 3</code></pre>
+                <p>Пояснение: подматрица 2×2 "ab" в позиции (1,1) и (3,3) совпадают.</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать 2D хеширование онлайн</h3>
+            <p>Введите матрицу и найдите одинаковые подматрицы:</p>
+            
+            <label>Размеры n k:</label>
+            <input type="text" id="size-2dhash" value="4 4">
+            
+            <label>Матрица (каждая строка в новой строке):</label>
+            <textarea id="matrix-2dhash-input" rows="6">abac
+bcab
+caba
+abac</textarea>
+            
+            <div class="try-it">
+                <button onclick="run2DHash()">Запустить</button>
+                <button onclick="load2DHashExample1()">Пример 1</button>
+                <button onclick="load2DHashExample2()">Пример 2</button>
+            </div>
+            
+            <div class="output" id="hash2d-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        class Hash2D {
+            constructor(matrix, n, k) {
+                this.mod = 1000000007;
+                this.p = 31;
+                this.q = 57;
+                this.n = n;
+                this.k = k;
+                this.matrix = matrix;
+                this.H = Array(n + 1).fill().map(() => Array(k + 1).fill(0));
+                this.PU = Array(n + 1).fill().map(() => Array(k + 1).fill(0));
+                this.PV = Array(n + 1).fill().map(() => Array(k + 1).fill(0));
+                this.build();
+            }
+            
+            add(a, b) {
+                if (a + b >= this.mod) return a + b - this.mod;
+                return a + b;
+            }
+            
+            sub(a, b) {
+                if (a - b < 0) return a - b + this.mod;
+                return a - b;
+            }
+            
+            mul(a, b) {
+                return Number((BigInt(a) * BigInt(b)) % BigInt(this.mod));
+            }
+            
+            build() {
+                for (let i = 0; i <= this.n; i++) {
+                    for (let j = 0; j <= this.k; j++) {
+                        if (i === 0 && j === 0) {
+                            this.PU[i][j] = this.PV[i][j] = 1;
+                        } else if (j === 0) {
+                            this.PU[i][j] = 1;
+                            this.PV[i][j] = this.mul(this.PV[i - 1][j], this.q);
+                        } else if (i === 0) {
+                            this.PV[i][j] = 1;
+                            this.PU[i][j] = this.mul(this.PU[i][j - 1], this.p);
+                        } else {
+                            this.PU[i][j] = this.mul(this.PU[i][j - 1], this.p);
+                            this.PV[i][j] = this.mul(this.PV[i - 1][j], this.q);
+                        }
+                    }
+                }
+                
+                for (let i = 0; i < this.n; i++) {
+                    for (let j = 0; j < this.k; j++) {
+                        let x = this.matrix[i].charCodeAt(j) - 'a'.charCodeAt(0) + 1;
+                        this.H[i + 1][j + 1] = this.add(this.H[i + 1][j + 1], x);
+                        this.H[i + 1][j + 1] = this.add(this.H[i + 1][j + 1], this.mul(this.H[i + 1][j], this.p));
+                        this.H[i + 1][j + 1] = this.add(this.H[i + 1][j + 1], this.mul(this.H[i][j + 1], this.q));
+                        this.H[i + 1][j + 1] = this.sub(this.H[i + 1][j + 1], this.mul(this.mul(this.H[i][j], this.p), this.q));
+                    }
+                }
+            }
+            
+            getHash(x1, y1, x2, y2) {
+                const a = x2 - x1 + 1;
+                const b = y2 - y1 + 1;
+                let h0 = this.H[x2 + 1][y2 + 1];
+                let h1 = this.mul(this.H[x2 + 1][y1], this.PU[a][b]);
+                let h2 = this.mul(this.H[x1][y2 + 1], this.PV[a][b]);
+                let h3 = this.mul(this.H[x1][y1], this.mul(this.PU[a][b], this.PV[a][b]));
+                let h = this.sub(this.sub(h0, h1), h2);
+                h = this.add(h, h3);
+                return h;
+            }
+            
+            findMaxDuplicate() {
+                let l = 0, r = Math.min(this.n, this.k) + 1;
+                let bestSize = 0;
+                let bestPos = null;
+                
+                const ok = (size) => {
+                    const seen = new Map();
+                    for (let i = 0; i <= this.n - size; i++) {
+                        for (let j = 0; j <= this.k - size; j++) {
+                            const h = this.getHash(i, j, i + size - 1, j + size - 1);
+                            if (seen.has(h)) {
+                                const [i1, j1] = seen.get(h);
+                                return { found: true, x1: i, y1: j, x2: i1, y2: j1, size: size };
+                            }
+                            seen.set(h, [i, j]);
+                        }
+                    }
+                    return { found: false };
+                };
+                
+                while (l < r - 1) {
+                    const m = Math.floor((l + r) / 2);
+                    const res = ok(m);
+                    if (res.found) {
+                        l = m;
+                        bestSize = m;
+                        bestPos = res;
+                    } else {
+                        r = m;
+                    }
+                }
+                
+                if (bestSize === 0) {
+                    return { size: 0 };
+                }
+                return bestPos;
+            }
+        }
+        
+        function run2DHash() {
+            const sizeStr = document.getElementById('size-2dhash').value;
+            const [n, k] = sizeStr.trim().split(/\s+/).map(Number);
+            const matrixText = document.getElementById('matrix-2dhash-input').value;
+            const lines = matrixText.trim().split('\n');
+            
+            if (isNaN(n) || isNaN(k) || n < 1 || k < 1) {
+                document.getElementById('hash2d-output').innerHTML = 'Введите корректные размеры n и k';
+                return;
+            }
+            
+            const matrix = [];
+            for (let i = 0; i < n && i < lines.length; i++) {
+                matrix.push(lines[i].trim());
+            }
+            
+            const solver = new Hash2D(matrix, n, k);
+            const result = solver.findMaxDuplicate();
+            
+            const outputDiv = document.getElementById('hash2d-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (result.size === 0) {
+                outputDiv.innerHTML = `0`;
+            } else {
+                outputDiv.innerHTML = `${result.size}<br>${result.x1 + 1} ${result.y1 + 1}<br>${result.x2 + 1} ${result.y2 + 1}`;
+            }
+            
+            const steps = [];
+            steps.push(`Матрица ${n}×${k}:`);
+            for (let i = 0; i < n; i++) {
+                steps.push(`  ${matrix[i]}`);
+            }
+            steps.push(`\nМаксимальный размер одинаковых подматриц: ${result.size}`);
+            if (result.size > 0) {
+                steps.push(`Первая подматрица: (${result.x1 + 1}, ${result.y1 + 1})`);
+                steps.push(`Вторая подматрица: (${result.x2 + 1}, ${result.y2 + 1})`);
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function load2DHashExample1() {
+            document.getElementById('size-2dhash').value = '4 4';
+            document.getElementById('matrix-2dhash-input').value = `abac
+bcab
+caba
+abac`;
+            run2DHash();
+        }
+        
+        function load2DHashExample2() {
+            document.getElementById('size-2dhash').value = '3 3';
+            document.getElementById('matrix-2dhash-input').value = `abc
+bcd
+cda`;
+            run2DHash();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            load2DHashExample1();
+        });
+    </script>
+</body>
+</html>

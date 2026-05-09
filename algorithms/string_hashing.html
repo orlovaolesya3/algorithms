@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Хеширование строк - поиск подстроки в строке</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        li {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .input-example {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-example h4 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .input-example pre {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .try-it {
+            margin-top: 20px;
+        }
+        
+        .step-by-step {
+            margin-top: 20px;
+        }
+        
+        .step {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        body.light-theme .step {
+            background: #f0f0f0;
+        }
+        
+        body.dark-theme .step {
+            background: #2a2a3a;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../pages/strings.html" class="back-btn">← Назад к алгоритмам со строками</a>
+        
+        <header>
+            <h1>Хеширование строк</h1>
+            <p>Поиск всех вхождений подстроки в строку за O(n + m)</p>
+        </header>
+
+        <!-- Код на Python и C++ -->
+        <div class="code-container">
+            <div class="code-block">
+                <div class="code-header">🐍 Python</div>
+                <pre><code>mod = 9223372036854775807
+
+# Модульная арифметика
+def add(a, b):
+    if a + b >= mod:
+        return a + b - mod
+    return a + b
+
+def sub(a, b):
+    if a - b < 0:
+        return a - b + mod
+    return a - b
+
+def mul(a, b):
+    return a * b % mod
+
+p = 31
+s1 = input()
+n = len(s1)
+s2 = input()
+m = len(s2)
+
+H = [0] * (n + 1)
+PU = [0] * (n + 1)
+PU[0] = 1
+
+for i in range(n):
+    x = ord(s1[i]) - ord('a') + 1
+    H[i + 1] = add(mul(H[i], p), x)
+    PU[i + 1] = mul(PU[i], p)
+
+h = 0
+for i in range(m):
+    x = ord(s2[i]) - ord('a') + 1
+    h = add(mul(h, p), x)
+
+A = []
+for i in range(m - 1, n):
+    r = i
+    l = r - m + 1
+    if sub(H[r + 1], mul(H[l], PU[r - l + 1])) == h:
+        A.append(l)
+
+print(len(A))
+print(*[x + 1 for x in A])</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">⚙️ C++</div>
+                <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+using ll = long long;
+
+const ll mod = 9223372036854775807;
+
+ll add(ll a, ll b) {
+    if (a + b >= mod) return a + b - mod;
+    return a + b;
+}
+
+ll sub(ll a, ll b) {
+    if (a - b < 0) return a - b + mod;
+    return a - b;
+}
+
+ll mul(ll a, ll b) {
+    return (__int128)a * b % mod;
+}
+
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    
+    const ll p = 31;
+    
+    string s1, s2;
+    cin >> s1 >> s2;
+    
+    ll n = s1.size();
+    ll m = s2.size();
+    
+    vector&lt;ll&gt; H(n + 1, 0);
+    vector&lt;ll&gt; PU(n + 1, 0);
+    PU[0] = 1;
+    
+    for (ll i = 0; i < n; i++) {
+        ll x = s1[i] - 'a' + 1;
+        H[i + 1] = add(mul(H[i], p), x);
+        PU[i + 1] = mul(PU[i], p);
+    }
+    
+    ll h = 0;
+    for (ll i = 0; i < m; i++) {
+        ll x = s2[i] - 'a' + 1;
+        h = add(mul(h, p), x);
+    }
+    
+    vector&lt;ll&gt; A;
+    for (ll i = m - 1; i < n; i++) {
+        ll r = i;
+        ll l = r - m + 1;
+        if (sub(H[r + 1], mul(H[l], PU[r - l + 1])) == h) {
+            A.push_back(l);
+        }
+    }
+    
+    cout << A.size() << "\n";
+    for (ll x : A) {
+        cout << x + 1 << " ";
+    }
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Объяснение алгоритма -->
+        <div class="explanation">
+            <h3>Как работает хеширование строк?</h3>
+            <p><strong>Полиномиальное хеширование</strong> — это метод, который позволяет быстро вычислять хеш любой подстроки и сравнивать строки за O(1).</p>
+            
+            <div class="note">
+                <strong>Основная идея:</strong> Строка представляется как число в системе счисления с основанием p (31), а хеш подстроки — как значение этого числа по модулю mod.
+            </div>
+            
+            <h4>Определение хеша</h4>
+            <p>Хеш строки S длины L: <code>hash(S) = (S[0] × p^{L-1} + S[1] × p^{L-2} + ... + S[L-1] × p^{0})</code></p>
+            
+            <h4>Предподсчёт</h4>
+            <ul>
+                <li><strong>H[i]</strong> — хеш префикса строки s1[0..i-1]</li>
+                <li><strong>PU[i]</strong> — pⁱ mod mod (степени основания)</li>
+            </ul>
+            
+            <h4>Хеш подстроки</h4>
+            <p>Формула: <code>hash(s1[l..r]) = H[r+1] - H[l] × p^{r-l+1}</code></p>
+            
+            <h4>Алгоритм поиска подстроки</h4>
+            <ol>
+                <li>Вычисляем хеш образца s2</li>
+                <li>Вычисляем хеши всех префиксов строки s1</li>
+                <li>Проходим по всем позициям, где может начинаться образец (0..n-m)</li>
+                <li>Сравниваем хеш образца с хешем подстроки s1[i..i+m-1]</li>
+                <li>При совпадении добавляем позицию в ответ</li>
+            </ol>
+            
+            <p><strong>Временная сложность:</strong> O(n + m) — построение хешей и один проход по строке.</p>
+            <p><strong>Пространственная сложность:</strong> O(n) для хранения хешей и степеней.</p>
+            
+            <div class="note">
+                <strong>Внимание:</strong> При использовании данного модуля (9223372036854775807, простое число) вероятность коллизии крайне мала. Для повышения надёжности можно использовать два разных модуля.
+            </div>
+        </div>
+
+        <!-- Формат ввода/вывода -->
+        <div class="explanation">
+            <h3>Формат ввода и вывода</h3>
+            <p><strong>Ввод:</strong></p>
+            <ul>
+                <li>Первая строка — строка s1 (текст, в котором ищем)</li>
+                <li>Вторая строка — строка s2 (образец, который ищем)</li>
+            </ul>
+            <p><strong>Вывод:</strong></p>
+            <ul>
+                <li>Первая строка — количество вхождений</li>
+                <li>Вторая строка — позиции вхождений (1-индексация)</li>
+            </ul>
+            
+            <div class="input-example">
+                <h4>Пример ввода:</h4>
+                <pre><code>abacabadabacaba
+aba</code></pre>
+                <p><strong>Вывод:</strong></p>
+                <pre><code>4
+1 5 9 13</code></pre>
+                <p>Пояснение: образец "aba" встречается в позициях 1, 5, 9, 13 (1-индексация).</p>
+            </div>
+        </div>
+
+        <!-- Интерактивный запуск -->
+        <div class="demo">
+            <h3>Попробовать хеширование строк онлайн</h3>
+            <p>Введите текст и образец для поиска:</p>
+            
+            <label>Строка s1 (текст):</label>
+            <input type="text" id="str1-input" value="abacabadabacaba">
+            
+            <label>Строка s2 (образец):</label>
+            <input type="text" id="str2-input" value="aba">
+            
+            <div class="try-it">
+                <button onclick="runStringHash()">Запустить</button>
+                <button onclick="loadStringHashExample1()">Пример 1</button>
+                <button onclick="loadStringHashExample2()">Пример 2</button>
+            </div>
+            
+            <div class="output" id="hash-output">
+                Результат появится здесь...
+            </div>
+        </div>
+
+        <!-- Пошаговое объяснение -->
+        <div class="step-by-step" id="step-by-step" style="display: none;">
+            <h3>Пошаговое выполнение:</h3>
+            <div id="steps-container"></div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        const MOD = 9223372036854775807n;
+        const P = 31n;
+        
+        function add(a, b) {
+            return (a + b) % MOD;
+        }
+        
+        function sub(a, b) {
+            return (a - b + MOD) % MOD;
+        }
+        
+        function mul(a, b) {
+            return (a * b) % MOD;
+        }
+        
+        function runStringHash() {
+            const s1 = document.getElementById('str1-input').value;
+            const s2 = document.getElementById('str2-input').value;
+            
+            if (!s1 || !s2) {
+                document.getElementById('hash-output').innerHTML = 'Введите обе строки';
+                return;
+            }
+            
+            const n = s1.length;
+            const m = s2.length;
+            
+            if (m > n) {
+                document.getElementById('hash-output').innerHTML = `Образец длиннее текста (${m} > ${n})`;
+                return;
+            }
+            
+            const H = new Array(n + 1).fill(0n);
+            const PU = new Array(n + 1).fill(0n);
+            PU[0] = 1n;
+            
+            const steps = [];
+            steps.push(`Текст: "${s1}" (длина ${n})`);
+            steps.push(`Образец: "${s2}" (длина ${m})`);
+            steps.push(`\nВычисляем хеши префиксов текста:`);
+            
+            for (let i = 0; i < n; i++) {
+                const x = BigInt(s1.charCodeAt(i) - 'a'.charCodeAt(0) + 1);
+                H[i + 1] = add(mul(H[i], P), x);
+                PU[i + 1] = mul(PU[i], P);
+                steps.push(`  H[${i + 1}] = hash("${s1.substring(0, i + 1)}") = ${H[i + 1]}`);
+            }
+            
+            let h = 0n;
+            for (let i = 0; i < m; i++) {
+                const x = BigInt(s2.charCodeAt(i) - 'a'.charCodeAt(0) + 1);
+                h = add(mul(h, P), x);
+            }
+            steps.push(`\nХеш образца: ${h}`);
+            
+            const positions = [];
+            steps.push(`\nПроверка позиций:`);
+            
+            for (let i = m - 1; i < n; i++) {
+                const r = i;
+                const l = r - m + 1;
+                const hash = sub(H[r + 1], mul(H[l], PU[r - l + 1]));
+                const match = hash === h;
+                if (match) {
+                    positions.push(l);
+                    steps.push(`  Позиция ${l + 1}: hash("${s1.substring(l, r + 1)}") = ${hash} == ${h} → совпадение ✓`);
+                } else {
+                    steps.push(`  Позиция ${l + 1}: hash("${s1.substring(l, r + 1)}") = ${hash} != ${h} → не совпадает`);
+                }
+            }
+            
+            const outputDiv = document.getElementById('hash-output');
+            const stepsDiv = document.getElementById('step-by-step');
+            const stepsContainer = document.getElementById('steps-container');
+            
+            if (positions.length === 0) {
+                outputDiv.innerHTML = `0\n\nОбразец не найден в тексте`;
+            } else {
+                outputDiv.innerHTML = `${positions.length}\n${positions.map(p => p + 1).join(' ')}`;
+            }
+            
+            stepsContainer.innerHTML = steps.map(step => `<div class="step">${step}</div>`).join('');
+            stepsDiv.style.display = 'block';
+        }
+        
+        function loadStringHashExample1() {
+            document.getElementById('str1-input').value = 'abacabadabacaba';
+            document.getElementById('str2-input').value = 'aba';
+            runStringHash();
+        }
+        
+        function loadStringHashExample2() {
+            document.getElementById('str1-input').value = 'hello world hello hello world';
+            document.getElementById('str2-input').value = 'hello';
+            runStringHash();
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStringHashExample1();
+        });
+    </script>
+</body>
+</html>
