@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Немного добрых слов</title>
+    <title>Информация для подготовки</title>
     <link rel="stylesheet" href="../style.css">
     <style>
         * {
@@ -58,7 +58,7 @@
             color: #aaa;
         }
 
-        /* === МЕСТО ДЛЯ ПОСЛЕДНЕЙ ФОТОГРАФИИ (чуть меньше) === */
+        /* === МЕСТО ДЛЯ ПОСЛЕДНЕЙ ФОТОГРАФИИ === */
         .photo-stack {
             position: fixed;
             bottom: 58vh;
@@ -98,7 +98,7 @@
             color: #333;
         }
 
-        /* === АНИМАЦИЯ ВЫЕЗДА (чуть меньше) === */
+        /* === АНИМАЦИЯ ВЫЕЗДА === */
         .animated-photo-container {
             position: fixed;
             bottom: 5vh;
@@ -173,11 +173,11 @@
             transition: opacity 0.12s ease-out;
         }
 
-        /* === ОСНОВНОЙ КОНТЕНТ === */
+        /* === ОСНОВНОЙ КОНТЕНТ — ЛЕВАЯ ГРАНИЦА НА МЕСТЕ (35%), ШИРИНА РАСШИРЕНА ВПРАВО === */
         .right-content {
             position: relative;
-            width: 45%;
-            margin-left: 55%;
+            width: 55%;
+            margin-left: 35%;
             padding: 2%;
             padding-bottom: 75vh;
         }
@@ -217,7 +217,7 @@
 
         .right-content header {
             text-align: left;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .right-content h1 {
             font-size: clamp(20px, 5vw, 36px);
@@ -228,18 +228,108 @@
             opacity: 0.8;
         }
 
-        .support-text {
+        .info-text {
             text-align: left;
         }
-        .support-text p {
-            font-size: clamp(14px, 3vw, 18px);
-            line-height: 1.5;
-            margin-bottom: 16px;
+        .info-text h2 {
+            font-size: clamp(18px, 4vw, 24px);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #abcdef;
         }
+        body.dark-theme .info-text h2 {
+            color: #667eea;
+        }
+        .info-text h3 {
+            font-size: clamp(16px, 3.5vw, 20px);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .info-text ul {
+            margin: 8px 0 16px 0;
+            padding-left: 20px;
+        }
+        .info-text li {
+            margin: 6px 0;
+            list-style-type: none;
+        }
+        .info-text a {
+            color: #abcdef;
+            text-decoration: none;
+            border-bottom: 1px dotted #abcdef;
+        }
+        body.dark-theme .info-text a {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .info-text a:hover {
+            border-bottom-style: solid;
+        }
+        .info-text .highlight {
+            background: rgba(171, 205, 239, 0.2);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-style: italic;
+        }
+        body.dark-theme .info-text .highlight {
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        /* Лестница для ступеней */
+        .staircase {
+            list-style: none;
+            padding-left: 0;
+            margin: 20px 0;
+        }
+        .staircase li {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .stair-item {
+            background: rgba(171, 205, 239, 0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+        body.dark-theme .stair-item {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .stair-item:hover {
+            transform: translateX(8px);
+            background: rgba(171, 205, 239, 0.25);
+        }
+        .stair-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #abcdef;
+        }
+        body.dark-theme .stair-title {
+            color: #667eea;
+        }
+        .stair-content {
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .stair-content a {
+            word-break: break-all;
+        }
+        
         @media (max-width: 768px) {
             .right-content header,
-            .support-text {
+            .info-text {
                 text-align: center;
+            }
+            .info-text ul {
+                text-align: left;
+                display: inline-block;
+            }
+            .stair-item:hover {
+                transform: translateX(0);
             }
         }
     </style>
@@ -262,13 +352,93 @@
     <div class="right-content">
         <a href="../index.html" class="back-btn">← На главную</a>
         <header>
-            <h1>Немного добрых слов</h1>
-            <p>Все будет круто</p>
+            <h1>Информация</h1>
+            <p>Полезные материалы и ресурсы для подготовки</p>
         </header>
-        <div class="support-text">
-            <p>Олимпиады это лишь маленький этап в твоей огромной жизни</p>
-            <p>Я верю, что ты со всем справишься</p>
-            <p>Просто кайфуй</p>
+        
+        <div class="info-text">
+            <h2>Ступени подготовки</h2>
+            
+            <div class="staircase">
+                <div class="stair-item">
+                    <div class="stair-title">Ступень 1 — изучение языка</div>
+                    <div class="stair-content">
+                        Выбери Python или C++ и изучи основы языка.<br>
+                        <strong>Курсы:</strong> 
+                        <a href="https://stepik.org" target="_blank">stepik.org</a>, 
+                        <a href="https://edu.sirius.online" target="_blank">edu.sirius.online</a>
+                    </div>
+                </div>
+                
+                <div class="stair-item">
+                    <div class="stair-title">Ступень 2 — кружки и алгоритмы</div>
+                    <div class="stair-content">
+                        Поступи на подходящую параллель в кружок и разбери алгоритмы.<br>
+                        <strong>Кружки:</strong> 
+                        <a href="https://algocode.ru/" target="_blank">algocode.ru</a>, 
+                        <a href="https://education.tbank.ru/school/generation/algo/" target="_blank">education.tbank.ru</a>, 
+                        <a href="https://nlogn.info/classes" target="_blank">nlogn.info/classes</a>
+                    </div>
+                </div>
+                
+                <div class="stair-item">
+                    <div class="stair-title">Ступень 3 — практика</div>
+                    <div class="stair-content">
+                        Решай раунды на Codeforces, архивы региональных и заключительных этапов ВсОШ и другие задачи.<br>
+                        <strong>Ресурсы:</strong> 
+                        <a href="https://codeforces.com" target="_blank">codeforces.com</a>, 
+                        <a href="https://contest.yandex.ru/roiarchive/" target="_blank">contest.yandex.ru/roiarchive</a>
+                    </div>
+                </div>
+            </div>
+            
+            <h2>Летние школы</h2>
+            <ul>
+                <li>Сириус — <a href="https://sochisirius.ru/obuchenie/nauka" target="_blank">sochisirius.ru</a> (не только летом)</li>
+                <li>ЛКШ (Летняя компьютерная школа) — <a href="https://lksh.ru" target="_blank">lksh.ru</a></li>
+                <li>NlogN</strong> — <a href="https://nlogn.info/camp" target="_blank">nlogn.info/camp</a></li>
+                <li>ЛКЛ (Летний компьютерный лагерь) — <a href="https://sicamp.ru" target="_blank">sicamp.ru</a></li>
+                <li>Иннополис — <a href="https://dovuz.innopolis.university/pre-olympiads/io-school" target="_blank">dovuz.innopolis.university</a></li>
+            </ul>
+            
+            <h2>Перечень олимпиад</h2>
+            
+            <h3>1 уровень</h3>
+            <ul>
+                <li>Вузовско-академическая олимпиада по информатике — <a href="https://sp.urfu.ru/vuzakadem/inform" target="_blank">sp.urfu.ru</a></li>
+                <li>Олимпиада школьников СПбГУ — <a href="https://olympiada.spbu.ru" target="_blank">olympiada.spbu.ru</a></li>
+                <li>Открытая олимпиада школьников по программированию — <a href="https://inf-open.ru" target="_blank">inf-open.ru</a></li>
+                <li>Всероссийская олимпиада «Высшая проба» — <a href="https://olymp.hse.ru/mmo/it" target="_blank">olymp.hse.ru</a></li>
+                <li>Индивидуальная олимпиада школьников по информатике и программированию — <a href="https://neerc.ifmo.ru/school/ioip/" target="_blank">neerc.ifmo.ru</a></li>
+                <li>Открытая олимпиада школьников (ИТМО) — <a href="https://olymp.itmo.ru" target="_blank">olymp.itmo.ru</a></li>
+                <li>Московская олимпиада школьников — <a href="https://mos-inf.olimpiada.ru" target="_blank">mos-inf.olimpiada.ru</a></li>
+            </ul>
+            
+            <h3>2 уровень</h3>
+            <ul>
+                <li>Международная олимпиада «Innopolis Open» — <a href="https://dovuz.innopolis.university/pre-olympiads/innopolis-open" target="_blank">dovuz.innopolis.university</a></li>
+                <li>Олимпиада школьников «Ломоносов» — <a href="https://olymp.msu.ru" target="_blank">olymp.msu.ru</a></li>
+                <li>Олимпиада школьников по программированию «ТехноКубок» — <a href="https://techno-cup.ru" target="_blank">techno-cup.ru</a></li>
+                <li>Открытая олимпиада школьников по программированию «Когнитивные технологии» — <a href="https://olymp.misis.ru" target="_blank">olymp.misis.ru</a></li>
+                <li>Отраслевая физико-математическая олимпиада «Росатом» — <a href="https://olymp.mephi.ru/rosatom_it" target="_blank">olymp.mephi.ru</a></li>
+                <li>Университетская олимпиада «Бельчонок» — <a href="https://dovuz.sfu-kras.ru/abiturientu-sfu/olimpiady/belchonok" target="_blank">dovuz.sfu-kras.ru</a></li>
+                <li>Всесибирская открытая олимпиада школьников — <a href="https://sesc.nsu.ru/olymp-vsesib/sections/informatics/" target="_blank">sesc.nsu.ru</a></li>
+                <li>Олимпиада школьников «Гранит науки» — <a href="https://ogn.spmi.ru" target="_blank">ogn.spmi.ru</a></li>
+            </ul>
+            
+            <h3>3 уровень</h3>
+            <ul>
+                <li>Олимпиада школьников «Шаг в будущее» — <a href="https://olymp.bmstu.ru/ru" target="_blank">olymp.bmstu.ru</a></li>
+                <li>Межрегиональные предметные олимпиады КФУ — <a href="https://malun.kpfu.ru/mpo" target="_blank">malun.kpfu.ru</a></li>
+                <li>Международная олимпиада школьников УрФУ «Изумруд» — <a href="https://izumrud.urfu.ru/ru/about/olymp/" target="_blank">izumrud.urfu.ru</a></li>
+            </ul>
+            
+            <div class="highlight">
+                <p><strong>Олимпиадное программирование</strong> — это не обязательно призерство какой-то крутой олимпиады. Это больше про комьюнити, поездки, решение задач и радостные моменты.</p>
+                <p>Олимпиады — это лишь маленький этап в твоей огромной жизни.</p>
+                <p>Я верю, что ты со всем справишься!</p>
+                <p><strong>Просто кайфуй!</strong></p>
+            </div>
         </div>
     </div>
 
